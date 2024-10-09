@@ -1,5 +1,6 @@
 module DUNEatLapp
 
-# Write your package code here.
+export greet_DUNEatLapp
+include("functions.jl")
 
 end
