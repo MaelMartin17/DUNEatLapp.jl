@@ -1,7 +1,7 @@
 name = "DUNEatLapp"
 uuid = "fdff9d19-a718-4541-8df3-3ed0c3979067"
 authors = ["Mael <mael.martin@lapp.in2p3.fr>"]
-version = "1.0.0-DEV"
+version = "1.0.0"
 
 [compat]
 julia = "1.10"
