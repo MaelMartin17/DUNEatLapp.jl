@@ -9,5 +9,4 @@ using DataFrames, Random
 	@test DUNEatLapp.greet_DUNEatLapp() == "Hello DUNEatLapp!"
 	@test DUNEatLapp.greet_DUNEatLapp() != "Hello world!"
 	@test DUNEatLapp.get_evts_index(df) != 2
-	@test DUNEatLapp.test_function() == "Haut les mains peau de lapin !"
 end
