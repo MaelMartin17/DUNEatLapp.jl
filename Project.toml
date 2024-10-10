@@ -1,13 +1,15 @@
 name = "DUNEatLapp"
 uuid = "fdff9d19-a718-4541-8df3-3ed0c3979067"
 authors = ["Mael <mael.martin@lapp.in2p3.fr>"]
-version = "0.2"
+version = "0.2.0"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
+Distributions = "0.25.112"
 julia = "1.10"
 
 [extras]
