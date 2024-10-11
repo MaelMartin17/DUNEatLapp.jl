@@ -14,8 +14,8 @@ function get_evts_index(df::DataFrame)
             continue
         else
             end_evt_index = i - 1
+            push!(evts_info,[event_number start_evt_index end_evt_index])
             event_number = df[i,:evt]
-            push!(evts_info,[evt_counter start_evt_index end_evt_index])
             evt_counter += 1
             start_evt_index = i
         end
@@ -23,7 +23,7 @@ function get_evts_index(df::DataFrame)
     #evt_counter += 1
     start_evt_index = end_evt_index + 1
     end_evt_index = length(df[!,:evt])
-    push!(evts_info,[evt_counter start_evt_index end_evt_index])
+    push!(evts_info,[event_number start_evt_index end_evt_index])
     return vcat(evts_info...)
 end
 
