@@ -40,7 +40,7 @@ end
 
 function get_n_primaries(my_file::String)
     df_primary = CSV.read(my_file, DataFrame,comment="#",header=["evt","pdg","E","x","y","z"])
-    n_neutrons_in_file = df_primary[end,1]
+    n_neutrons_in_file = df_primary[end,1]+1
     return n_neutrons_in_file
 end
 
