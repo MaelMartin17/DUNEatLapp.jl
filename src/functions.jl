@@ -44,7 +44,7 @@ function get_n_primaries(my_file::String)
     return n_neutrons_in_file
 end
 
-#=function get_rate_neutron_captures_Ar(my_file::String,name_primary::String)
+function get_rate_neutron_captures_Ar(my_file::String,name_primary::String)
     df_neutrons = CSV.read(my_file, DataFrame,comment="#",header=["evt","proc","Z","A","pdg","E","x","y","z","t"])
     n_neutrons = get_n_primaries(name_primary)
     n_capture_Ar = 0
@@ -62,4 +62,4 @@ end
         end
     end
     return n_capture_Ar/n_neutrons, n_capture_Ar_fidu/n_neutrons
-end=#
+end
