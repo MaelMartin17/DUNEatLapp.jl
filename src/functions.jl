@@ -1,4 +1,4 @@
-using DataFrames, Random, Distributions, CSV
+using DataFrames, Random, Distributions, CSV, Clustering
 
 function greet_DUNEatLapp()
     return "Hello DUNEatLapp!"
@@ -62,4 +62,28 @@ function get_rate_neutron_captures_Ar(my_file::String,name_primary::String)
         end
     end
     return n_capture_Ar/n_neutrons, n_capture_Ar_fidu/n_neutrons
+end
+function cluster_energy_Max(df::DataFrame,radius::Float64)
+    df_Info = DataFrame(evt = Int32[], E_max = Float32[])
+    Index_evts = get_evts_index(df)
+    for i in 1:1:length(Index_evts[:,1])
+        first = Index_evts[i,2]
+        last  = Index_evts[i,3]
+        data_Ar = df[first:last,:]
+        if length(data_Ar[:,2]) > 3
+            clustering = dbscan(Matrix(permutedims(data_Ar[:,2:4])), radius, min_neighbors = 1, min_cluster_size = 1)
+            E_c = 0
+            for a in clustering.clusters
+                Ep = 0.
+                for index_c in a.core_indices
+                    Ep +=data_Ar[index_c,:E]
+                end
+                if Ep > E_c                
+                    E_c = Ep
+                end        
+            end
+            push!(df_Info,[data_Ar[1,:evt], E_c])
+        end
+    end
+    return df_Info
 end

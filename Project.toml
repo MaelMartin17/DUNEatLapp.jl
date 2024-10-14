@@ -1,16 +1,18 @@
 name = "DUNEatLapp"
 uuid = "fdff9d19-a718-4541-8df3-3ed0c3979067"
 authors = ["Mael <mael.martin@lapp.in2p3.fr>"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+Clustering = "aaaa29a8-35af-508c-8bc3-b662a17a0fe5"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
 CSV = "0.10.14"
+Clustering = "0.15.7"
 Distributions = "0.25.112"
 julia = "1.10"
 
