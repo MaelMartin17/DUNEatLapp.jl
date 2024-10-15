@@ -63,7 +63,8 @@ function get_rate_neutron_captures_Ar(my_file::String,name_primary::String)
     end
     return n_capture_Ar/n_neutrons, n_capture_Ar_fidu/n_neutrons
 end
-function cluster_energy_Max(df::DataFrame,radius::Float64)
+function cluster_energy_Max(file::String,radius::Float64)
+    df = CSV.read(my_file, DataFrame,comment="#",header=[:evt, :x, :y, :z, :E, :t])
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
     Index_evts = get_evts_index(df)
     for i in 1:1:length(Index_evts[:,1])
