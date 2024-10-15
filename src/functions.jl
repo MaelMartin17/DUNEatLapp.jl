@@ -1,9 +1,21 @@
 using DataFrames, Random, Distributions, CSV, Clustering
 
+
+"""
+function greet_DUNEatLapp()
+Function to test if the package works
+There is no entry and the output is Hello DUNEatLapp!
+"""
 function greet_DUNEatLapp()
     return "Hello DUNEatLapp!"
 end
 
+"""
+function apply_E_resolution(True_E_data::Vector, E_resolution::Int)
+Function to apply an energy resolution on data. This resolution comes from the MicroBoone experiment and it is by default at 10% for 1 MeV.
+To adjust the resolution, you have to take in account the 10 % and add or subtract to obtain the the desired value.
+It accepts a vector for the True_E_data and an integer for the E_resolution. It returns a vector. 
+"""
 function apply_E_resolution(True_E_data::Vector,E_resolution::Int)
     distorted_E = zeros(length(True_E_data))
     for event = 1 : 1 : length(True_E_data)
