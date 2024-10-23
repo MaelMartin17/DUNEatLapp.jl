@@ -28,20 +28,20 @@ function apply_E_resolution(True_E_data::Vector,E_resolution::Int)
 end
 
 
-function get_rate_neutron_captures_Ar(my_file::String,name_primary::String)
+function get_rate_neutron_captures_Ar(my_file::String,name_primary::String,fidu::Real=100.)
     df_neutrons = CSV.read(my_file, DataFrame,comment="#",header=["evt","proc","Z","A","pdg","E","x","y","z","t"])
     n_neutrons = get_n_primaries(name_primary)
     n_capture_Ar = 0
     n_capture_Ar_fidu = 0
+    FD_x_size = 3100.
+    FD_y_size = 755.
+    FD_z_size = 700.
 
-    n_evt = []
-    n_evt_fidu = []
-    fidu = 100
-    for i = 1 : 1 : length(df_neutrons[:,1])
+    for i = 1 : 1 : length(df_neutrons[!,1])
          if df_neutrons[i,:proc] == "nCapture" && df_neutrons[i,:Z] == 18
             n_capture_Ar += 1
         end
-        if df_neutrons[i,:proc] == "nCapture" && df_neutrons[i,:Z] == 18 && abs(df_neutrons[i,:x]) < (3100 - fidu) && abs(df_neutrons[i,:y]) < (755 - fidu) && abs(df_neutrons[i,:z]) < (700 - fidu)
+        if df_neutrons[i,:proc] == "nCapture" && df_neutrons[i,:Z] == 18 && abs(df_neutrons[i,:x]) < (FD_x_size - fidu) && abs(df_neutrons[i,:y]) < (FD_y_size - fidu) && abs(df_neutrons[i,:z]) < (FD_z_size - fidu)
             n_capture_Ar_fidu += 1
         end
     end
