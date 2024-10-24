@@ -27,6 +27,21 @@ function apply_E_resolution(True_E_data::Vector,E_resolution::Int)
     return distorted_E
 end
 
+"""
+function apply_std_E_resolution(True_E_data::Vector,E_resolution::Real)
+function to apply a sigma/E = resolution / sqrt(E) energy resolution
+It assumes that the True_E_data is in MeV, otherwise the results will be incorrect
+"""
+function apply_std_E_resolution(True_E_data::Vector,E_resolution::Real)
+    distorted_E = zeros(length(True_E_data))
+    for event = 1 : 1 : length(True_E_data)
+        μ = True_E_data[event]
+        σ = E_resolution * sqrt(μ)
+        d = Normal(μ,σ)        
+        distorted_E[event] = rand(d)
+    end
+    return distorted_E
+end
 
 function get_rate_neutron_captures_Ar(my_file::String,name_primary::String,fidu::Real=100.)
     df_neutrons = CSV.read(my_file, DataFrame,comment="#",header=["evt","proc","Z","A","pdg","E","x","y","z","t"])
