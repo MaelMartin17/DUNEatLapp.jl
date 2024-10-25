@@ -95,6 +95,7 @@ function cluster_energy_Max(df::DataFrame,radius::Float64)
 end
 
 function Condition_Cluster_Max(df_Ula::DataFrame,radius::Float64,limit::Float64,option::Bool)
+	df_Info = DataFrame(evt = Int32[], E_max = Float32[])
 	Index_evts = get_evts_index(df_Ula)
 	nbr_evt_rejected = 0
 	for i in 1:1:length(Index_evts[:,1])
