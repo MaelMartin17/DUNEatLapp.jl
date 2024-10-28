@@ -68,7 +68,11 @@ function get_rate_neutron_captures_Ar(my_file::String,name_primary::String,fidu:
     return n_capture_Ar/n_neutrons, n_capture_Ar_fidu/n_neutrons
 end
 
-
+"""
+function cluster_energy_Max(df::DataFrame,radius::Float64)
+function to get the cluster with the highest energy.
+It accepts a DataFrame for df and a Float for radius (in centimeters). It returns a DataFrame with the number of the event and the energy of the cluster.
+"""
 function cluster_energy_Max(df::DataFrame,radius::Float64)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
     Index_evts = get_evts_index(df)
@@ -94,6 +98,12 @@ function cluster_energy_Max(df::DataFrame,radius::Float64)
     return df_Info
 end
 
+"""
+function Condition_Cluster_Max(df_Ula::DataFrame,radius::Float64,limit::Float64,option::Bool)
+function to select the clusters with the highest-energy and with no event between them and the limit variable.
+It accepts a DataFrame for df_Ula, a Float for radius and limit (in centimeters) and a Boolen for option. 
+If option is True, it returns a DataFrame with the number of the event and the energy of the cluster. If option is false, it returns the number of events rejected and the number of initial events.
+"""
 function Condition_Cluster_Max(df_Ula::DataFrame,radius::Float64,limit::Float64,option::Bool)
 	df_Info = DataFrame(evt = Int32[], E_max = Float32[])
 	Index_evts = get_evts_index(df_Ula)
