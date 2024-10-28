@@ -31,7 +31,7 @@ function get_n_primaries(my_file::String)
 Function to get the number of primaries generated
 """
 function get_n_primaries(my_file::String)
-    df_primary = CSV.read(my_file, DataFrame,comment="#",header=["evt","pdg","E","x","y","z"])
-    n_primaries_in_file = df_primary[end,1]+1
+    df_primary = CSV.read(my_file, DataFrame,comment="#",select=[1],header=["evt","pdg","E","x","y","z"])
+    n_primaries_in_file = df_primary[end,:evt]+1
     return n_primaries_in_file
 end
