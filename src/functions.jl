@@ -49,7 +49,7 @@ function to get the rate of neutrons that are captured in LAr and in a fiducial 
 It accepts a String for my_file, a String for name_primary and a Real in centimeters for fidu. It returns two floats.
 """
 function get_rate_neutron_captures_Ar(my_file::String,name_primary::String,fidu::Real=100.)
-    df_neutrons = CSV.read(my_file, DataFrame,comment="#",header=["evt","proc","Z","A","pdg","E","x","y","z","t"])
+    df_neutrons = CSV.read(my_file, DataFrame,comment="#",drop=[:evt,:A,:pdg,:E,:t],header=["evt","proc","Z","A","pdg","E","x","y","z","t"])
     n_neutrons = get_n_primaries(name_primary)
     n_capture_Ar = 0
     n_capture_Ar_fidu = 0
