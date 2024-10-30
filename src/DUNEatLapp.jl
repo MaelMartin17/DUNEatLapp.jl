@@ -1,6 +1,11 @@
 module DUNEatLapp
 
-import DelimitedFiles
+using DelimitedFiles
+using DataFrames
+using Random
+using Distributions
+using CSV
+using Clustering
 
 export greet_DUNEatLapp
 export get_evts_index
