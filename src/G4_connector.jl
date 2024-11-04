@@ -1,6 +1,6 @@
 """
 function get_evts_index(df::DataFrame)
-Function to get the index fo start and end of each event in a ulalap.csv file
+Function to get the index of start and end of each event in a ulalap.csv file
 It accepts a dataframe and returns a matrix with column corresponding to the: number_of_event  index_start_evt  index_ends_evt
 """
 function get_evts_index(df::DataFrame)
@@ -29,6 +29,7 @@ end
 """
 function get_n_primaries(my_file::String)
 Function to get the number of primaries generated
+It accepts the name as string of the primary file produced by ulalap and returns the number of primaries that have been used for the simulations
 """
 function get_n_primaries(my_file::String)
     df_primary = CSV.read(my_file, DataFrame,comment="#",select=[1],header=["evt","pdg","E","x","y","z"])
