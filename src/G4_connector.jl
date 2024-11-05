@@ -36,3 +36,13 @@ function get_n_primaries(my_file::String)
     n_primaries_in_file = df_primary[end,:evt]+1
     return n_primaries_in_file
 end
+
+"""
+function get_primary_vertex(my_file::String)
+function to get the primary info from a csv file into a data frame
+It accepts the name of the file and returns a data frame
+"""
+function get_primary_vertex(my_file::String)
+    df_primary = CSV.read(my_file, DataFrame,comment="#",header=["evt","pdg","E","x","y","z"])
+    return df_primary
+end
