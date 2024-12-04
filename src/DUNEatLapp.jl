@@ -20,6 +20,7 @@ export get_primary_vertex
 export cluster_energy_Max
 export Condition_Cluster_Max
 export get_capture_position
+export is_n_capture_on_Ar
 include("functions.jl")
 include("G4_connector.jl")
 include("neutron_capture_info.jl")
