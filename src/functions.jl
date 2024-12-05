@@ -126,6 +126,21 @@ function Condition_Cluster_Max(df_Ula::DataFrame,radius::Float64,limit::Float64,
 	end
 end
 
+function nbr_cluster(df::DataFrame,radius::Float64)
+    df_Info = DataFrame(evt = Int32[], nbr_cl = Int32[])
+    Index_evts = get_evts_index(df)
+    for i in 1:1:length(Index_evts[:,1])
+        first = Index_evts[i,2]
+        last  = Index_evts[i,3]
+        data_Ar = df[first:last,:]
+        if length(data_Ar[:,2]) > 3
+            clustering = dbscan(Matrix(permutedims(data_Ar[:,2:4])), radius, min_neighbors = 1, min_cluster_size = 1)
+            push!(df_Info,[data_Ar[1,:evt], length(clustering.clusters)])
+        end
+    end
+    return df_Info
+end
+
 
 
 

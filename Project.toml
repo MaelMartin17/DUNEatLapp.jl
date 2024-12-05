@@ -1,7 +1,7 @@
 name = "DUNEatLapp"
 uuid = "fdff9d19-a718-4541-8df3-3ed0c3979067"
 authors = ["Mael <mael.martin@lapp.in2p3.fr>"]
-version = "0.5.0"
+version = "0.6.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
