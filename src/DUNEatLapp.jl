@@ -19,9 +19,12 @@ export get_info_neutron_captures_Ar
 export get_primary_vertex
 export cluster_energy_Max
 export Condition_Cluster_Max
+export get_clusters_energy_of_evt
+export process_clustering_neutron_file
 export get_capture_position
 export is_n_capture_on_Ar
 include("functions.jl")
+include("clustering.jl")
 include("G4_connector.jl")
 include("neutron_capture_info.jl")
 
