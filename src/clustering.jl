@@ -25,7 +25,7 @@ function get_clusters_energy_of_evt(data_Ar::DataFrame,radius::Float64)
 end
 
 """
-function process_neutron_file(df::DataFrame,radius::Float64,n_Ar_info::Vector{Int64},t_n_Ar_info::Vector{<:Real})
+function process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar_info::Vector{Int64},t_n_Ar_info::Vector{<:Real})
 function to process a neutron file. It needs the ulalap file, the radius to use in the cluster, and the info about the capture
 it will return the energy of clusters as well as the maximum energy of each cluster
 """
