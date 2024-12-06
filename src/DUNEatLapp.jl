@@ -24,7 +24,7 @@ export process_clustering_neutron_file
 export get_capture_position
 export is_n_capture_on_Ar
 include("functions.jl")
-include("clustering.jl")
+include("clustering_g4.jl")
 include("G4_connector.jl")
 include("neutron_capture_info.jl")
 
