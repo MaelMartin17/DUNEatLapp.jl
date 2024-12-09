@@ -47,7 +47,7 @@ function get_clusters_vertex_and_energy_of_evt(data_Ar::DataFrame, radius::Float
         push!(cluster_centers, avg_coords)
     else
         # Apply DBSCAN clustering on the spatial coordinates (:x, :y, :z)
-        spatial_coords = Matrix(permutedims(df_evt[:, [:x, :y, :z]]))
+        spatial_coords = Matrix(permutedims(data_Ar[:, [:x, :y, :z]]))
         clustering = dbscan(spatial_coords, radius, min_neighbors=1, min_cluster_size=1)
 
         # Loop over clusters
@@ -111,4 +111,57 @@ function process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar_info
         end
     end
     return vcat(clusters_info_E...), clusters_info_max_E, vcat(clusters_info_E_pre_post...), clusters_info_max_E_pre_post, vcat(clusters_info_E_other...), clusters_info_max_E_other
+end
+
+"""
+function full_process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar_info::Vector{Int64},t_n_Ar_info::Vector{<:Real})
+Function to process a neutron run and return cluster information about energy and position
+"""
+function full_process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar_info::Vector{Int64},t_n_Ar_info::Vector{<:Real})
+    clusters_info_E = Vector{<:AbstractFloat}[]
+    clusters_info_max_E = AbstractFloat[]
+    clusters_info_E_bar = []
+    clusters_info_E_pre_post = Vector{<:AbstractFloat}[]
+    clusters_info_E_pre_post_bar = []
+    clusters_info_max_E_pre_post = AbstractFloat[]
+    clusters_info_E_other = Vector{<:AbstractFloat}[]
+    clusters_info_E_other_bar = []
+    clusters_info_max_E_other = AbstractFloat[]
+    Index_evts = get_evts_index(df)
+    #loop over all the events in the file
+    for i in 1:1:length(Index_evts[:,1])
+        i_evt = Index_evts[i,1] + 1 #since the index in geant4 starts at 0
+        first = Index_evts[i,2]
+        last  = Index_evts[i,3]
+        data_Ar_all = df[first:last,:]
+        #When the capture takes place in Argon
+        if n_Ar_info[i_evt] == 1
+            t_capture_Ar = t_n_Ar_info[i_evt]
+            #n-Ar capture gammas
+            data_Ar = data_Ar_all[ (t_capture_Ar - 100) .< data_Ar_all[:,:t] .< (t_capture_Ar + 100),:]
+            cl_all, pos_r = get_clusters_vertex_and_energy_of_evt(data_Ar,radius)
+            push!(clusters_info_E,cl_all)
+            push!(clusters_info_max_E,maximum(cl_all))
+            push!(clusters_info_E_bar,pos_r)
+            #had ellastic excitation gammas before n capture
+            data_pre = data_Ar_all[data_Ar_all[:,:t] .< (t_capture_Ar - 100),:]
+            cl_all, pos_r = get_clusters_vertex_and_energy_of_evt(data_pre,radius)
+            push!(clusters_info_E_pre_post,cl_all)
+            push!(clusters_info_max_E_pre_post,maximum(cl_all))
+            push!(clusters_info_E_pre_post_bar,pos_r)
+            #n-Ar radioactivation gammas
+            data_post = data_Ar_all[data_Ar_all[:,:t] .> (t_capture_Ar + 100),:]
+            cl_all, pos_r = get_clusters_vertex_and_energy_of_evt(data_post,radius)
+            push!(clusters_info_E_pre_post,cl_all)
+            push!(clusters_info_max_E_pre_post,maximum(cl_all))
+            push!(clusters_info_E_pre_post_bar,pos_r)
+        #When the capture take place elsewhere but with deposited energy in Argon
+        else
+            cl_all, pos_r = get_clusters_vertex_and_energy_of_evt(data_Ar_all,radius)
+            push!(clusters_info_E_other,cl_all)
+            push!(clusters_info_max_E_other,maximum(cl_all))
+            push!(clusters_info_E_other_bar,pos_r)
+        end
+    end
+    return vcat(clusters_info_E...), clusters_info_max_E, clusters_info_E_bar, vcat(clusters_info_E_pre_post...), clusters_info_max_E_pre_post, clusters_info_E_pre_post_bar, vcat(clusters_info_E_other...), clusters_info_max_E_other, clusters_info_E_other_bar
 end

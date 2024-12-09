@@ -22,6 +22,7 @@ export Condition_Cluster_Max
 export get_clusters_energy_of_evt
 export get_clusters_vertex_and_energy_of_evt
 export process_clustering_neutron_file
+export full_process_clustering_neutron_file
 export get_capture_position
 export is_n_capture_on_Ar
 export Single_Hits_lardon
