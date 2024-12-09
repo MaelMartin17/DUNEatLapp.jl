@@ -13,7 +13,7 @@ function get_clusters_energy_of_evt(data_Ar::DataFrame, radius::Float64)
         push!(cluster_energies, total_energy)
     else
         # Apply DBSCAN clustering on the spatial coordinates (columns 2 to 4)
-        spatial_coords = Matrix(permutedims(df_evt[:, [:x, :y, :z]]))
+        spatial_coords = Matrix(permutedims(data_Ar[:, [:x, :y, :z]]))
         clustering = dbscan(spatial_coords, radius, min_neighbors=1, min_cluster_size=1)
 
         # Loop over clusters
