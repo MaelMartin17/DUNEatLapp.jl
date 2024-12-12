@@ -3,7 +3,7 @@ function get_evts_index(df::DataFrame)
 Function to get the index of start and end of each event in a ulalap.csv file
 It accepts a dataframe and returns a matrix with column corresponding to the: number_of_event  index_start_evt  index_ends_evt
 """
-function get_evts_index_gpt(df::DataFrame)
+function get_evts_index(df::DataFrame)
     # Initialize variables
     evts_info = Vector{Vector{Int}}()
     start_idx = 1
