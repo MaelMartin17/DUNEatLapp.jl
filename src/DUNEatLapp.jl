@@ -25,6 +25,7 @@ export get_capture_position
 export is_n_capture_on_Ar
 export Single_Hits_lardon
 export nbr_cluster
+export energy_all_clusters
 include("functions.jl")
 include("clustering.jl")
 include("G4_connector.jl")
