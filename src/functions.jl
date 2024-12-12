@@ -154,7 +154,7 @@ It accepts a DataFrame for df_Ula, a Float for radius.
 It returns a DataFrame with the event index and the energy of the clusters.
 """
 function energy_all_clusters(df::DataFrame,radius::Float64)
-    df_Info = DataFrame(evt = Int32[], E_max = Float32[])
+    df_Info = DataFrame(evt = Int32[], E_cl = Float32[])
     Index_evts = get_evts_index(df)
     for i in 1:1:length(Index_evts[:,1])
         first = Index_evts[i,2]
@@ -163,9 +163,11 @@ function energy_all_clusters(df::DataFrame,radius::Float64)
         if length(data_Ar[:,2]) > 3
             clustering = dbscan(Matrix(permutedims(data_Ar[:,2:4])), radius, min_neighbors = 1, min_cluster_size = 1)
             for a in clustering.clusters
+                Ep = 0.
                 for index_c in a.core_indices
-                    push!(df_Info,[data_Ar[index_c,:evt], data_Ar[index_c,:E]])
+                    Ep += data_Ar[index_c,:E]
                 end
+                push!(df_Info,[data_Ar[1,:evt],Ep])
             end
         end
     end
