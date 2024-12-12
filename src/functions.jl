@@ -164,7 +164,7 @@ function energy_all_clusters(df::DataFrame,radius::Float64)
             clustering = dbscan(Matrix(permutedims(data_Ar[:,2:4])), radius, min_neighbors = 1, min_cluster_size = 1)
             for a in clustering.clusters
                 for index_c in a.core_indices
-                    push!(df_info,[data_Ar[index_c,:evt], data_Ar[index_c,:E]])
+                    push!(df_Info,[data_Ar[index_c,:evt], data_Ar[index_c,:E]])
                 end
             end
         end
