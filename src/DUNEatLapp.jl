@@ -8,6 +8,8 @@ using Random
 using Distributions
 using CSV
 using Clustering
+using ProgressBars
+using HDF5
 
 export greet_DUNEatLapp
 export get_evts_index
@@ -28,6 +30,7 @@ export is_n_capture_on_Ar
 export Single_Hits_lardon
 export nbr_cluster
 export energy_all_clusters
+
 include("functions.jl")
 include("clustering_g4.jl")
 include("G4_connector.jl")
