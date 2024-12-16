@@ -9,6 +9,7 @@ using Distributions
 using CSV
 using Clustering
 using ProgressBars
+using HDF5
 
 export greet_DUNEatLapp
 export get_evts_index
