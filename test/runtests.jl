@@ -1,6 +1,6 @@
 using DUNEatLapp
 using Test
-using DataFrames, Random, Distributions, CSV, Clustering
+using DataFrames, Random, Distributions, CSV, Clustering, ProgressBars
 
 @testset "DUNEatLapp.jl" begin
 	
