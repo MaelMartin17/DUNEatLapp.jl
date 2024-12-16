@@ -25,7 +25,7 @@ function get_evts_index(df::DataFrame)
     # Handle the last event
     push!(evts_info, [evt_counter, start_idx, size(df, 1)])
 
-    return vcat(evts_info...)
+    return transpose(hcat(evts_info...))
 end
 
 """
