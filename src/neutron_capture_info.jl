@@ -72,16 +72,19 @@ function is_n_capture_on_Ar(
     for i in 1:size(Index_evts, 1)
         first, last = Index_evts[i, 2:3]  # Get the event's range in df_secondaries
         data_Ar = @view df_secondaries[first:last, :]  # Slice data for this event (view to avoid copying)
-        
-        # Filter rows matching the capture process and atomic number
-        captures = data_Ar[(data_Ar.proc .== capture_proc) .& (data_Ar.Z .== capture_Z), :]
-        
-        # Set capture information for this event
-        evt_n = Index_evts[i, 1] + 1  # Adjust event number to match Info arrays
-        if !isempty(captures)
-            Info_n_capture[evt_n] = 1
-            Info_t_n_capture[evt_n] = captures[1, :t]  # Use the first capture time
+
+
+        cap = 0
+        t_cap = 0
+        for n = 1 : 1 : length(data_Ar[:,1])
+            if data_Ar[n,:proc] == capture_proc && data_Ar[n,:Z] == capture_Z
+                cap = 1
+                t_cap = data_Ar[n,:t]
+            end
         end
+        evt_n = Index_evts[i,1] + 1
+        Info_n_capture[evt_n] = cap
+        Info_t_n_capture[evt_n] = t_cap
     end
     
     return Info_n_capture, Info_t_n_capture
