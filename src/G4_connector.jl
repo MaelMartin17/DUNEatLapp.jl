@@ -4,28 +4,30 @@ Function to get the index of start and end of each event in a ulalap.csv file
 It accepts a dataframe and returns a matrix with column corresponding to the: number_of_event  index_start_evt  index_ends_evt
 """
 function get_evts_index(df::DataFrame)
-    # Initialize variables
-    evts_info = Vector{Vector{Int}}()
-    start_idx = 1
-    event_number = df[1, :evt]
+    #Initialize variables
+    event_number = df[1,:evt]
     evt_counter = 1
-
+    evts_info = []
+    start_evt_index = 1
     # Iterate through rows to identify event boundaries
-    for i in 2:size(df, 1)
-        if df[i, :evt] != event_number
-            # Record the event's index range
-            push!(evts_info, [evt_counter, start_idx, i - 1])
-            # Update for the new event
+    for i = 1 : 1 : length(df[!,:evt])
+        if  event_number == df[i,:evt]
+            continue
+        else
+            end_evt_index = i - 1
+	    # Record the event's index range
+            push!(evts_info,[event_number start_evt_index end_evt_index])
+	    # Update for the new event
+            event_number = df[i,:evt]
             evt_counter += 1
-            start_idx = i
-            event_number = df[i, :evt]
+            start_evt_index = i
         end
     end
-
     # Handle the last event
-    push!(evts_info, [evt_counter, start_idx, size(df, 1)])
-
-    return transpose(hcat(evts_info...))
+    start_evt_index = end_evt_index + 1
+    end_evt_index = length(df[!,:evt])
+    push!(evts_info,[event_number start_evt_index end_evt_index])
+    return vcat(evts_info...)
 end
 
 """
