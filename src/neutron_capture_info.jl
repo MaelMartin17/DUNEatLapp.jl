@@ -11,32 +11,79 @@ function get_capture_position(name_file::String)
 end
 
 """
-function is_n_capture_on_Ar(my_file_secondary::String, my_file_primary::String)
-Function to obtain two vectors, the first with yes or not the capture was on Ar, and the second the time of neutron capture
-It needs the secondary and primary files
+    is_n_capture_on_Ar(my_file_secondary::String, my_file_primary::String; 
+                       capture_proc::String = "nCapture", 
+                       capture_Z::Int = 18) -> Tuple{Vector{Int}, Vector{Float64}}
+
+Determines if neutron capture events occurred on a specific element (default: Argon, Z=18) 
+from secondary particle data. Returns a tuple of vectors indicating capture status and 
+time for each primary event.
+
+# Arguments
+- `my_file_secondary::String`: Path to the secondary particle data file.
+- `my_file_primary::String`: Path to the primary particle data file.
+- `capture_proc::String`: (Optional) Process type to filter (default: `"nCapture"`).
+- `capture_Z::Int`: (Optional) Atomic number to filter for (default: `18`).
+
+# Returns
+- `Tuple{Vector{Int}, Vector{Float64}}`: A tuple of two vectors:
+  1. `Info_n_capture::Vector{Int}`: Binary vector indicating if a neutron capture occurred for each event.
+  2. `Info_t_n_capture::Vector{Float64}`: Vector containing the capture time for each event (0 if no capture).
+
+# Errors
+- Throws an `AssertionError` if the specified files do not exist.
+- Throws an error if the files are malformed or missing required columns.
+
+# Example
+```julia
+Info_n_capture, Info_t_n_capture = is_n_capture_on_Ar("secondary.csv", "primary.csv")
+```
 """
-function is_n_capture_on_Ar(my_file_secondary::String, my_file_primary::String)
+function is_n_capture_on_Ar(
+    my_file_secondary::String, 
+    my_file_primary::String; 
+    capture_proc::String = "nCapture",  # Default capture process
+    capture_Z::Int = 18                 # Default atomic number (argon)
+)
+    # Validate inputs
+    @assert isfile(my_file_secondary) "Secondary file $(my_file_secondary) does not exist."
+    @assert isfile(my_file_primary) "Primary file $(my_file_primary) does not exist."
+    
+    # Get the number of primary events
     N_Prim = get_n_primaries(my_file_primary)
-    Info_n_capture = zeros(Int,N_Prim)
-    Info_t_n_capture = zeros(N_Prim)
-    df_secondaries = CSV.read(my_file_secondary, DataFrame,comment="#",drop=[:A,:pdg,:E,:x,:y,:z],header=["evt","proc","Z","A","pdg","E","x","y","z","t"])
+    
+    # Initialize result arrays
+    Info_n_capture = zeros(Int, N_Prim)  # Capture flag for each event
+    Info_t_n_capture = zeros(N_Prim)    # Capture time for each event
+    
+    # Read the secondary file and preprocess
+    df_secondaries = CSV.read(
+        my_file_secondary, 
+        DataFrame, 
+        comment = "#", 
+        drop = [:A, :pdg, :E, :x, :y, :z], 
+        header = ["evt", "proc", "Z", "A", "pdg", "E", "x", "y", "z", "t"]
+    )
+    
+    # Get event indices
     Index_evts = get_evts_index(df_secondaries)
-    for i = 1 : 1 : length(Index_evts[:,1])
-        first = Index_evts[i,2]
-        last  = Index_evts[i,3]
-        data_Ar = df_secondaries[first:last,:]
-        cap = 0
-        t_cap = 0
-        for n = 1 : 1 : length(data_Ar[:,1])
-            if data_Ar[n,:proc] == "nCapture" && data_Ar[n,:Z] == 18
-                cap = 1
-                t_cap = data_Ar[n,:t]
-            end
+    
+    # Process each event
+    for i in 1:size(Index_evts, 1)
+        first, last = Index_evts[i, 2:3]  # Get the event's range in df_secondaries
+        data_Ar = @view df_secondaries[first:last, :]  # Slice data for this event (view to avoid copying)
+        
+        # Filter rows matching the capture process and atomic number
+        captures = data_Ar[(data_Ar.proc .== capture_proc) .& (data_Ar.Z .== capture_Z), :]
+        
+        # Set capture information for this event
+        evt_n = Index_evts[i, 1] + 1  # Adjust event number to match Info arrays
+        if !isempty(captures)
+            Info_n_capture[evt_n] = 1
+            Info_t_n_capture[evt_n] = captures[1, :t]  # Use the first capture time
         end
-        evt_n = Index_evts[i,1] + 1
-        Info_n_capture[evt_n] = cap
-        Info_t_n_capture[evt_n] = t_cap
     end
+    
     return Info_n_capture, Info_t_n_capture
 end
 
