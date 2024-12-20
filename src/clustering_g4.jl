@@ -67,6 +67,42 @@ end
 
 
 """
+	get_clusters_vertex_and_energy_of_evt(data_Ar::SubDataFrame{DataFrame, DataFrames.Index, UnitRange{Int64}}, radius::Float64)
+Same as before to ensure compatability with @view usage
+"""
+function get_clusters_vertex_and_energy_of_evt(data_Ar::SubDataFrame{DataFrame, DataFrames.Index, UnitRange{Int64}}, radius::Float64)
+    # Collect energy and coordinate information for each cluster
+    cluster_energies = AbstractFloat[]
+    cluster_centers = Vector{<:AbstractFloat}[]  # To store the average coordinates (x, y, z) of each cluster
+
+    # If there are few data points, consider all as a single cluster
+    if size(data_Ar, 1) <= 3
+        total_energy = sum(data_Ar.E)
+        avg_coords = [mean(data_Ar.x), mean(data_Ar.y), mean(data_Ar.z)]
+        push!(cluster_energies, total_energy)
+        push!(cluster_centers, avg_coords)
+    else
+        # Apply DBSCAN clustering on the spatial coordinates (:x, :y, :z)
+        spatial_coords = Matrix(permutedims(data_Ar[:, [:x, :y, :z]]))
+        clustering = dbscan(spatial_coords, radius, min_neighbors=1, min_cluster_size=1)
+
+        # Loop over clusters
+        for iCluster in clustering.clusters
+            #Loop over all hits in cluster to compute total cluster energy
+            jIndex = iCluster.core_indices
+            cluster_data = data_Ar[jIndex, :]
+            Ecluster = sum(cluster_data.E)
+            avg_coords = [mean(cluster_data.x), mean(cluster_data.y), mean(cluster_data.z)]
+            push!(cluster_energies,Ecluster)
+            push!(cluster_centers,avg_coords)
+        end
+    end
+
+    return cluster_energies, cluster_centers
+end
+
+
+"""
 function process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar_info::Vector{Int64},t_n_Ar_info::Vector{<:Real})
 function to process a neutron file. It needs the ulalap file, the radius to use in the cluster, and the info about the capture
 it will return the energy of clusters as well as the maximum energy of each cluster
@@ -89,17 +125,21 @@ function process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar_info
         if n_Ar_info[i_evt] == 1
             t_capture_Ar = t_n_Ar_info[i_evt]
             #n-Ar capture gammas
-            data_Ar = data_Ar_all[ (t_capture_Ar - 100) .< data_Ar_all[:,:t] .< (t_capture_Ar + 100),:]
+	    # Define the time window
+            lower_bound = t_capture_Ar - 100
+            upper_bound = t_capture_Ar + 100
+	    #Select time of neutron capture to avoid mixing with post capture activity from radioactivation
+	    data_Ar = data_Ar_all[(data_Ar_all[:, :t] .> lower_bound) .& (data_Ar_all[:, :t] .< upper_bound), :]
             cl_all = get_clusters_energy_of_evt(data_Ar,radius)
             push!(clusters_info_E,cl_all)
             push!(clusters_info_max_E,maximum(cl_all))
             #had ellastic excitation gammas before n capture
-            data_pre = data_Ar_all[data_Ar_all[:,:t] .< (t_capture_Ar - 100),:]
+            data_pre = data_Ar_all[data_Ar_all[:,:t] .< lower_bound,:]
             cl_all = get_clusters_energy_of_evt(data_pre,radius)
             push!(clusters_info_E_pre_post,cl_all)
             push!(clusters_info_max_E_pre_post,maximum(cl_all))
             #n-Ar radioactivation gammas
-            data_post = data_Ar_all[data_Ar_all[:,:t] .> (t_capture_Ar + 100),:]
+            data_post = data_Ar_all[data_Ar_all[:,:t] .> upper_bound,:]
             cl_all = get_clusters_energy_of_evt(data_post,radius)
             push!(clusters_info_E_pre_post,cl_all)
             push!(clusters_info_max_E_pre_post,maximum(cl_all))
@@ -138,19 +178,23 @@ function full_process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar
         if n_Ar_info[i_evt] == 1
             t_capture_Ar = t_n_Ar_info[i_evt]
             #n-Ar capture gammas
-            data_Ar = data_Ar_all[ (t_capture_Ar - 100) .< data_Ar_all[:,:t] .< (t_capture_Ar + 100),:]
+	    # Define the time window
+            lower_bound = t_capture_Ar - 100
+            upper_bound = t_capture_Ar + 100
+	    # Select rows within the time window of neutron capture
+            data_Ar = data_Ar_all[(data_Ar_all[:, :t] .> lower_bound) .& (data_Ar_all[:, :t] .< upper_bound), :]
             cl_all, pos_r = get_clusters_vertex_and_energy_of_evt(data_Ar,radius)
             push!(clusters_info_E,cl_all)
             push!(clusters_info_max_E,maximum(cl_all))
             push!(clusters_info_E_bar,pos_r)
             #had ellastic excitation gammas before n capture
-            data_pre = data_Ar_all[data_Ar_all[:,:t] .< (t_capture_Ar - 100),:]
+            data_pre = data_Ar_all[data_Ar_all[:,:t] .< lower_bound,:]
             cl_all, pos_r = get_clusters_vertex_and_energy_of_evt(data_pre,radius)
             push!(clusters_info_E_pre_post,cl_all)
             push!(clusters_info_max_E_pre_post,maximum(cl_all))
             push!(clusters_info_E_pre_post_bar,pos_r)
             #n-Ar radioactivation gammas
-            data_post = data_Ar_all[data_Ar_all[:,:t] .> (t_capture_Ar + 100),:]
+            data_post = data_Ar_all[data_Ar_all[:,:t] .> upper_bound,:]
             cl_all, pos_r = get_clusters_vertex_and_energy_of_evt(data_post,radius)
             push!(clusters_info_E_pre_post,cl_all)
             push!(clusters_info_max_E_pre_post,maximum(cl_all))
