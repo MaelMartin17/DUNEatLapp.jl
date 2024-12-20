@@ -84,7 +84,7 @@ function process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar_info
         i_evt = Index_evts[i,1] + 1 #since the index in geant4 starts at 0
         first = Index_evts[i,2]
         last  = Index_evts[i,3]
-        data_Ar_all = df[first:last,:]
+        data_Ar_all = @view df[first:last,:] #view to avoid copy
         #When the capture takes place in Argon
         if n_Ar_info[i_evt] == 1
             t_capture_Ar = t_n_Ar_info[i_evt]
@@ -133,7 +133,7 @@ function full_process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar
         i_evt = Index_evts[i,1] + 1 #since the index in geant4 starts at 0
         first = Index_evts[i,2]
         last  = Index_evts[i,3]
-        data_Ar_all = df[first:last,:]
+        data_Ar_all = @view df[first:last,:] #view to avoid copying
         #When the capture takes place in Argon
         if n_Ar_info[i_evt] == 1
             t_capture_Ar = t_n_Ar_info[i_evt]
