@@ -6,8 +6,7 @@ It accepts a dataframe and returns a matrix with column corresponding to the: nu
 function get_evts_index(df::DataFrame)
     #Initialize variables
     event_number = df[1,:evt]
-    evt_counter = 1
-    evts_info = []
+    evts_info = Vector{Vector{Int}}()
     start_evt_index = 1
     # Iterate through rows to identify event boundaries
     for i = 1 : 1 : length(df[!,:evt])
@@ -15,19 +14,18 @@ function get_evts_index(df::DataFrame)
             continue
         else
             end_evt_index = i - 1
-	    # Record the event's index range
-            push!(evts_info,[event_number start_evt_index end_evt_index])
-	    # Update for the new event
+    	    # Record the event's index range
+            push!(evts_info,[event_number, start_evt_index, end_evt_index])
+    	    # Update for the new event
             event_number = df[i,:evt]
-            evt_counter += 1
             start_evt_index = i
         end
     end
     # Handle the last event
     start_evt_index = end_evt_index + 1
     end_evt_index = length(df[!,:evt])
-    push!(evts_info,[event_number start_evt_index end_evt_index])
-    return vcat(evts_info...)
+    push!(evts_info,[event_number, start_evt_index, end_evt_index])
+    return transpose(hcat(evts_info...))
 end
 
 """
