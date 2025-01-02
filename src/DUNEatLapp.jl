@@ -31,6 +31,7 @@ export Single_Hits_lardon
 export nbr_cluster
 export energy_all_clusters
 export cluster_energy_Max_Emin_deposit
+export New_Condition_Cluster_Max
 
 include("functions.jl")
 include("clustering_g4.jl")
