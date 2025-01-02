@@ -239,7 +239,7 @@ function cluster_energy_Max_Emin_deposit(df::DataFrame,radius::Float64,Emin::Flo
     for i in 1:1:length(Index_evts[:,1])
         first = Index_evts[i,2]
         last  = Index_evts[i,3]
-        data_Ar = df[df[first:last,5] > Emin , :]
+        data_Ar = df[df[first:last,5] .> Emin , :]
         if length(data_Ar[:,2]) > 3
             clustering = dbscan(Matrix(permutedims(data_Ar[:,2:4])), radius, min_neighbors = 1, min_cluster_size = 1)
             E_c = 0
