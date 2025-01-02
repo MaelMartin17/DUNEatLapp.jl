@@ -134,12 +134,13 @@ If option is True, it returns a DataFrame with the number of the event and the e
 """
 function New_Condition_Cluster_Max(df_Ula::DataFrame,radius::Float64,Emin::Float64,limit::Float64,option::Bool)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
-    Index_evts = get_evts_index(df_Ula)
+    New_df_Ula = df_Ula(df_Ula[:,5] .> Emin, :]
+    Index_evts = get_evts_index(New_df_Ula)
     nbr_evt_rejected = 0
     for i in 1:1:length(Index_evts[:,1])
         first = Index_evts[i,2]
         last  = Index_evts[i,3]
-        data_Ar = df[df[first:last,5] > Emin , :]
+        data_Ar = df[first:last, :]
         if length(data_Ar[:,2]) > 3
             clustering = dbscan(Matrix(permutedims(data_Ar[:,2:4])), radius, min_neighbors = 1, min_cluster_size = 1)
             data = []
@@ -233,9 +234,10 @@ function cluster_energy_Max_Emin_deposit(df::DataFrame,radius::Float64,Emin::Flo
 function to get the cluster with the highest energy but with the application of an energy minimum for the deposits.
 It accepts a DataFrame for df and a Float for radius (in centimeters) and a Energy minimum (in keV). It returns a DataFrame with the number of the event and the energy of the cluster.
 """
-function cluster_energy_Max_Emin_deposit(df::DataFrame,radius::Float64,Emin::Float64)
+function cluster_energy_Max_Emin_deposit(df_Ula::DataFrame,radius::Float64,Emin::Float64)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
-    Index_evts = get_evts_index(df)
+    New_df_Ula = df_Ula(df_Ula[:,5] .> Emin, :]
+    Index_evts = get_evts_index(New_df_Ula)
     for i in 1:1:length(Index_evts[:,1])
         first = Index_evts[i,2]
         last  = Index_evts[i,3]
