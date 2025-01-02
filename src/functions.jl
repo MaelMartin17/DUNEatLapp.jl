@@ -134,7 +134,7 @@ If option is True, it returns a DataFrame with the number of the event and the e
 """
 function New_Condition_Cluster_Max(df_Ula::DataFrame,radius::Float64,Emin::Float64,limit::Float64,option::Bool)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
-    New_df_Ula = df_Ula(df_Ula[:,5] .> Emin, :]
+    New_df_Ula = df_Ula[df_Ula[:,5] .> Emin, :]
     Index_evts = get_evts_index(New_df_Ula)
     nbr_evt_rejected = 0
     for i in 1:1:length(Index_evts[:,1])
@@ -236,7 +236,7 @@ It accepts a DataFrame for df and a Float for radius (in centimeters) and a Ener
 """
 function cluster_energy_Max_Emin_deposit(df_Ula::DataFrame,radius::Float64,Emin::Float64)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
-    New_df_Ula = df_Ula(df_Ula[:,5] .> Emin, :]
+    New_df_Ula = df_Ula[df_Ula[:,5] .> Emin, :]
     Index_evts = get_evts_index(New_df_Ula)
     for i in 1:1:length(Index_evts[:,1])
         first = Index_evts[i,2]
