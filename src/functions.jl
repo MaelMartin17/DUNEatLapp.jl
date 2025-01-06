@@ -213,7 +213,7 @@ function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Floa
                 push!(data,[Ep x_moy/length(a.core_indices) y_moy/length(a.core_indices) z_moy/length(a.core_indices)])
             end
             data = vcat(data...)
-            data_bis = data[data[:,1] .!= maximum(data[:,1]) && data[:,1] .> Emin, :]
+            data_bis = data[(data[:,1] .!= maximum(data[:,1])) .& (data[:,1] .> Emin), :]
             condition = true
             for i in 1:1:length(data_bis[:,1])
                 dist = sqrt((data[argmax(data[:,1]),2]-data_bis[i,2])^2+(data[argmax(data[:,1]),3]-data_bis[i,3])^2+(data[argmax(data[:,1]),4]-data_bis[i,4])^2)
