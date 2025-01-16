@@ -42,6 +42,20 @@ function apply_std_E_resolution(True_E_data::Vector,E_resolution::Real)
 end
 
 """
+ 	get_bin_centers(h::Histogram)
+Function to get the bin centers of a given histogram
+It accepts an histogram and return the bin centers
+"""
+function get_bin_centers(h::Histogram)
+    bin_edges = h.edges[1]
+    bin_edges_left = bin_edges[1:end-1]
+    bin_edges_right = bin_edges[2:end]
+    bin_widths = bin_edges_right - bin_edges_left
+    bin_centers = (bin_edges_right + bin_edges_left) / 2
+    return bin_centers
+end
+
+"""
 function cluster_energy_Max(df::DataFrame,radius::Float64)
 function to get the cluster with the highest energy.
 It accepts a DataFrame for df and a Float for radius (in centimeters). It returns a DataFrame with the number of the event and the energy of the cluster.

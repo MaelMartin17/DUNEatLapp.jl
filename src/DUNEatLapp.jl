@@ -14,7 +14,8 @@ using HDF5
 export greet_DUNEatLapp
 export get_evts_index
 export apply_E_resolution
-export apply_std_E_resolution 
+export apply_std_E_resolution
+export get_bin_centers 
 export get_n_primaries
 export get_rate_neutron_captures_Ar
 export get_info_neutron_captures_Ar
