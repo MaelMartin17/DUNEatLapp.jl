@@ -10,6 +10,7 @@ using CSV
 using Clustering
 using ProgressBars
 using HDF5
+using StatsBase
 
 export greet_DUNEatLapp
 export get_evts_index
