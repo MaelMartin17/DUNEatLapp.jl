@@ -42,6 +42,22 @@ function apply_std_E_resolution(True_E_data::Vector,E_resolution::Real)
 end
 
 """
+	 get_sampling(h::Histogram,n_samples::Int,res::Float64)
+Funtion to sample from a histogram and apply an energy resolution
+It accepts an histogram, the number of required samples n_samples and the resolution you want to apply res
+"""
+function get_sampling(h::Histogram,n_samples::Int,res::Float64)
+    E_distribution = zeros(n_samples)
+    items = collect(get_bin_centers(h_no_shielding))
+    weights = h_no_shielding.weights .+ 1e-9
+    for i = 1 : 1 : n_samples
+        sampled_bin = sample(items, Weights(weights), 1)[1]
+        E_distribution[i] =  sampled_bin 
+    end
+    return apply_std_E_resolution(E_distribution,res)
+end
+
+"""
  	get_bin_centers(h::Histogram)
 Function to get the bin centers of a given histogram
 It accepts an histogram and return the bin centers
