@@ -58,6 +58,22 @@ function get_sampling(h::Histogram,n_samples::Int,res::Float64)
 end
 
 """
+    get_sampling(bin_centers::Vector{Float64},bin_weights::Vector{Float64},n_samples::Int,res::Float64)
+Funtion to sample from a distribution and apply an energy resolution
+It accepts a distribution x,y, where x are the values and y are the weights, the number of required samples n_samples and the resolution you want to apply res
+"""
+function get_sampling(bin_centers::Vector{Float64},bin_weights::Vector{Float64},n_samples::Int,res::Float64)
+    E_distribution = zeros(n_samples)
+    items = bin_centers
+    weights = bin_weights .+ 1e-9
+    for i = 1 : 1 : n_samples
+        sampled_bin = sample(items, Weights(weights), 1)[1]
+        E_distribution[i] =  sampled_bin 
+    end
+    return apply_std_E_resolution(E_distribution,res)
+end
+
+"""
  	get_bin_centers(h::Histogram)
 Function to get the bin centers of a given histogram
 It accepts an histogram and return the bin centers
