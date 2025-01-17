@@ -48,8 +48,8 @@ It accepts an histogram, the number of required samples n_samples and the resolu
 """
 function get_sampling(h::Histogram,n_samples::Int,res::Float64)
     E_distribution = zeros(n_samples)
-    items = collect(get_bin_centers(h_no_shielding))
-    weights = h_no_shielding.weights .+ 1e-9
+    items = collect(get_bin_centers(h))
+    weights = h.weights .+ 1e-9
     for i = 1 : 1 : n_samples
         iSample = sample(items, Weights(weights), 1)[1]
         E_distribution[i] =  iSample 
