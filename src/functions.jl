@@ -51,8 +51,8 @@ function get_sampling(h::Histogram,n_samples::Int,res::Float64)
     items = collect(get_bin_centers(h_no_shielding))
     weights = h_no_shielding.weights .+ 1e-9
     for i = 1 : 1 : n_samples
-        sampled_bin = sample(items, Weights(weights), 1)[1]
-        E_distribution[i] =  sampled_bin 
+        iSample = sample(items, Weights(weights), 1)[1]
+        E_distribution[i] =  iSample 
     end
     return apply_std_E_resolution(E_distribution,res)
 end
