@@ -185,7 +185,9 @@ function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Floa
                     y_moy += data_Ar[index_c,:y]
                     z_moy += data_Ar[index_c,:z]
                 end
-                push!(data,[Ep x_moy/length(a.core_indices) y_moy/length(a.core_indices) z_moy/length(a.core_indices)])
+                if Ep > Emin
+	        	push!(data,[Ep x_moy/length(a.core_indices) y_moy/length(a.core_indices) z_moy/length(a.core_indices)])
+	    	end
             end
             data = vcat(data...)
             data_bis = data[(data[:,1] .!= maximum(data[:,1])) .& (data[:,1] .> Emin), :]
