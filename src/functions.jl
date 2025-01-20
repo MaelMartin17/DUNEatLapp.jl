@@ -202,21 +202,26 @@ function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Floa
                     z_moy += data_Ar[index_c,:z]
                 end
                 if Ep > Emin
-	        	push!(data,[Ep x_moy/length(a.core_indices) y_moy/length(a.core_indices) z_moy/length(a.core_indices)])
+	            push!(data,[Ep x_moy/length(a.core_indices) y_moy/length(a.core_indices) z_moy/length(a.core_indices)])
 	    	end
             end
-            data = vcat(data...)
-            data_bis = data[(data[:,1] .!= maximum(data[:,1])) .& (data[:,1] .> Emin), :]
-            condition = true
-            for i in 1:1:length(data_bis[:,1])
-                dist = sqrt((data[argmax(data[:,1]),2]-data_bis[i,2])^2+(data[argmax(data[:,1]),3]-data_bis[i,3])^2+(data[argmax(data[:,1]),4]-data_bis[i,4])^2)
-                if dist < limit
-                    condition = false 
-                    nbr_evt_rejected += 1
-                    break
-                else 
-                    continue
+            if length(data[:,1])>0
+	        data = vcat(data...)
+        	data_bis = data[(data[:,1] .!= maximum(data[:,1])) .& (data[:,1] .> Emin), :]
+        	condition = true
+                for i in 1:1:length(data_bis[:,1])
+                    dist = sqrt((data[argmax(data[:,1]),2]-data_bis[i,2])^2+(data[argmax(data[:,1]),3]-data_bis[i,3])^2+(data[argmax(data[:,1]),4]-data_bis[i,4])^2)
+                    if dist < limit
+                        condition = false 
+                        nbr_evt_rejected += 1
+                        break
+                    else 
+                        continue
+                    end
                 end
+            else 
+                nbr_evt_rejected += 1
+                condition = false
             end
             if option == true && condition == true 
                 push!(df_Info,[data_Ar[1,:evt], maximum(data[:,1])])
