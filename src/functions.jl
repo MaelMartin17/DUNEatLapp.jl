@@ -112,6 +112,8 @@ function cluster_energy_Max(df::DataFrame,radius::Float64)
                 end        
             end
             push!(df_Info,[data_Ar[1,:evt], E_c])
+        else
+            push!(df_Info,[data_Ar[1,:evt], sum(data_Ar[:,:E])])
         end
     end
     return df_Info
