@@ -10,7 +10,7 @@ This Julia package brings together the functions used at Lapp to study low-energ
 ## Installation
 
 ```julia
-Pkg.add("DUNEatLapp")
+Pkg.add("https://github.com/MaelMartin17/DUNEatLapp.jl")
 ```
 ## Available functions
 
