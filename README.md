@@ -14,7 +14,15 @@ Pkg.add("https://github.com/MaelMartin17/DUNEatLapp.jl")
 ```
 ## Description : 
 
-Some functions cluster the deposits created after Ulalap simulation (https://github.com/lmanzanillas/ULALAP) and select some information about this clustering => clustering.jl
+clustering.jl => functions that cluster the deposits created after ULALAP simulation (https://github.com/lmanzanillas/ULALAP) and select some information about this clustering 
+
+G4_connector.jl => functions that provide basic information about the ULALAP simulation
+
+analyse_lardon.jl => functions that extract the data from a Lardon analysis
+
+neutron_capture_info.jl => functions that give information about the neutron capture in the Liquid Argon, after ULALAP simulation
+
+function.jl => Basic functions to apply as energy resolution, obtain the bin center, etc...
 
 
 
