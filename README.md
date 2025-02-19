@@ -12,6 +12,9 @@ This Julia package brings together the functions used at Lapp to study low-energ
 ```julia
 Pkg.add("https://github.com/MaelMartin17/DUNEatLapp.jl")
 ```
-## Available functions
+## Description : 
 
-get_evts_index(df::DataFrame) : Provides indexes for each event in a Geant4 simulation 
+Some functions cluster the deposits created after Ulalap simulation (https://github.com/lmanzanillas/ULALAP) and select some information about this clustering => clustering.jl
+
+
+
