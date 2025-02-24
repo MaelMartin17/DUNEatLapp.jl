@@ -4,7 +4,7 @@ function to collect the data about the single hits found by Lardon.
 It receives the path of the HDF5 files in your directory and it returns a DataFrame with all the single Hits and the information about
 """
 function Single_Hits_lardon(path::String)
-    Info = DataFrame(Id=Int32[],apa=Int32, x=Float32[],y=Float32[],z=Float32[],t=Float32[],tdc_max=Vector[],tdc_min=Vector[],charge_neg=Vector[],charge_pos=Vector[],d_bary_max=Float32[],d_track_2D=Float32[],veto=Vector[],fc_max=Float32[],tdc_start=Vector[],tdc_stop=Vector[]);
+    Info = DataFrame(Id=Int32[],apa=Int32[], x=Float32[],y=Float32[],z=Float32[],t=Float32[],tdc_max=Vector[],tdc_min=Vector[],charge_neg=Vector[],charge_pos=Vector[],d_bary_max=Float32[],d_track_2D=Float32[],veto=Vector[],fc_max=Float32[],tdc_start=Vector[],tdc_stop=Vector[]);
     for (root, dirs, files) in walkdir(path)
         for i in ProgressBar(files)
             fid = h5open("$(root)/$(i)", "r")
