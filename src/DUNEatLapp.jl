@@ -30,6 +30,7 @@ export full_process_clustering_neutron_file
 export get_capture_position
 export is_n_capture_on_Ar
 export Single_Hits_lardon
+export Single_Hits_lardon_old
 export nbr_cluster
 export Condition_Cluster_Max_Emin
 
