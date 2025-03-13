@@ -15,7 +15,7 @@ function Single_Hits_lardon(path::String)
             Eset = fid["event"]
             C = read(Eset);   
             for i in 1:1:length(A)
-                push!(Info,[A[i].ID, A[i].module,A[i].x, A[i].y, A[i].z, A[i].timestamp, A[i].tdc_max, A[i].tdc_min, A[i].charge_neg, A[i].charge_pos, A[i].d_bary_max, A[i].d_track_2D, A[i].veto,B[(A[i].ID)+1].fC_max,A[i].tdc_start,A[i].tdc_stop,C[(A[i].event)+1].time_s])  
+                push!(Info,[A[i].ID, A[i].module,A[i].x, A[i].y, A[i].z, A[i].timestamp, A[i].tdc_max, A[i].tdc_min, A[i].charge_neg, A[i].charge_pos, A[i].d_bary_max, A[i].d_track_2D, A[i].veto,B[(A[i].hit_IDs[7])+1].fC_max,A[i].tdc_start,A[i].tdc_stop,C[(A[i].event)+1].time_s])  
             end    
         end
     end
