@@ -33,6 +33,7 @@ export Single_Hits_lardon
 export Single_Hits_lardon_old
 export nbr_cluster
 export Condition_Cluster_Max_Emin
+export get_hits_in_active_LAr_TPC
 
 include("functions.jl")
 include("clustering_g4.jl")

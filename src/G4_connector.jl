@@ -48,3 +48,24 @@ function get_primary_vertex(my_file::String)
     df_primary = CSV.read(my_file, DataFrame,comment="#",header=["evt","pdg","E","x","y","z"])
     return df_primary
 end
+
+
+"""
+function get_hits_in_active_LAr_TPC(df_evt_all_hits::DataFrame,fidu::Float64 = 0.)
+Function to filter the hits of a given event and select only hits in active region of the active volume
+It uses the fact that the CRPs/cathode represents a surface of 6000x1300 cm2
+For fiducialization purposes a given fiducialization can also be used (in cm)
+"""
+function get_hits_in_active_LAr_TPC(df_evt_all_hits::DataFrame,fidu::Float64 = 0.)
+    active_LAr_x = 3000.0
+    active_LAr_y = 725.0
+    active_LAr_z = 650.0
+    active_x = active_LAr_x - fidu
+    active_y = active_LAr_y - fidu
+    active_z = active_LAr_z - fidu
+    df_active = df_evt_all_hits
+    df_active = df_active[ abs.(df_active[:,:x]) .< active_x, : ]
+    df_active = df_active[ abs.(df_active[:,:y]) .< active_y, : ]
+    df_active = df_active[ abs.(df_active[:,:z]) .< active_z, : ]
+    return df_active
+end
