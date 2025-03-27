@@ -11,6 +11,7 @@ using Clustering
 using ProgressBars
 using HDF5
 using StatsBase
+using Distances
 
 export greet_DUNEatLapp
 export get_evts_index
@@ -34,6 +35,8 @@ export Single_Hits_lardon_old
 export nbr_cluster
 export Condition_Cluster_Max_Emin
 export get_hits_in_active_LAr_TPC
+export get_clusters_vertex_and_energy_of_evt_space_time
+export find_n_clusters_in_radius
 
 include("functions.jl")
 include("clustering_g4.jl")

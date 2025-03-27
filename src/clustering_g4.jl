@@ -27,6 +27,62 @@ function get_clusters_energy_of_evt(data_Ar::DataFrame, radius::Float64)
 
     return cluster_energies
 end
+
+#_______________________________________________________________________________________________________________________
+"""
+function get_clusters_vertex_and_energy_of_evt_space_time(data_Ar::DataFrame, radius::Float64)
+Similar to get_clusters_vertex_and_energy_of_evt but using the time coordinate to better differentiate hits
+that are produced by long time decays. 
+Time coordinate (in us) is converted to a fourth coordinate assuming a drift time of 0.1601 cm/us (expected value at 500 V/cm) 
+"""
+function get_clusters_vertex_and_energy_of_evt_space_time(data_Ar::DataFrame, radius::Float64)
+    # Collect energy and coordinate information for each cluster
+    cluster_energies = AbstractFloat[]
+    cluster_centers = Vector{<:AbstractFloat}[]  # To store the average coordinates (x, y, z) of each cluster
+    t_to_cm_at_500V_cm = 0.1601
+    # If there are few data points, consider all as a single cluster
+    if size(data_Ar, 1) <= 3
+        total_energy = sum(data_Ar.E)
+        avg_coords = [mean(data_Ar.x), mean(data_Ar.y), mean(data_Ar.z)]
+        push!(cluster_energies, total_energy)
+        push!(cluster_centers, avg_coords)
+    else
+        # Apply DBSCAN clustering on the spatial coordinates including time (:x, :y, :z, :t)
+        spatial_coords = Matrix(permutedims(data_Ar[:, [:x, :y, :z]]))
+        t_coords = Matrix(permutedims(data_Ar[:, [:t]])) * t_to_cm_at_500V_cm
+        space_time_coords = vcat(spatial_coords,t_coords)
+        clustering = dbscan(space_time_coords, radius, min_neighbors=1, min_cluster_size=1)
+
+        # Loop over clusters
+        for iCluster in clustering.clusters
+            #Loop over all hits in cluster to compute total cluster energy
+            jIndex = iCluster.core_indices
+            cluster_data = data_Ar[jIndex, :]
+            Ecluster = sum(cluster_data.E)
+            avg_coords = [mean(cluster_data.x), mean(cluster_data.y), mean(cluster_data.z), t_to_cm_at_500V_cm*mean(cluster_data.t)]
+            push!(cluster_energies,Ecluster)
+            push!(cluster_centers,avg_coords)
+        end
+    end
+
+    return cluster_energies, cluster_centers
+end
+#_______________________________________________________________________________________________________________________
+
+"""
+function find_n_clusters_in_radius(vector_E::Vector{AbstractFloat}, vector_Coords::Vector{Vector{<:AbstractFloat}}, Threshold::Float64 = 1000, radius::Float64=100.)
+function to get the the number of clusters above a given threshold in a given radius
+"""
+function find_n_clusters_in_radius(vector_E::Vector{AbstractFloat}, vector_Coords::Vector{Vector{<:AbstractFloat}}, Threshold::Float64 = 1000, radius::Float64=100.)
+    # Find the index of the maximum energy value in vector_E
+    i_max_E = argmax(vector_E)  
+    
+    # Count the number of elements that meet both conditions:
+    # 1. Their energy value is greater than the given Threshold.
+    # 2. Their Euclidean distance from the max-energy point is within the given radius.
+    return count(i -> vector_E[i] > Threshold && euclidean(vector_Coords[i],vector_Coords[i_max_E]) < radius, 
+                 eachindex(vector_E))
+end
 #_______________________________________________________________________________________________________________________
 
 """
