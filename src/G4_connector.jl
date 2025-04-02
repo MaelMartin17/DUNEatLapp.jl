@@ -69,3 +69,18 @@ function get_hits_in_active_LAr_TPC(df_evt_all_hits::DataFrame,fidu::Float64 = 0
     df_active = df_active[ abs.(df_active[:,:z]) .< active_z, : ]
     return df_active
 end
+
+"""
+function get_hits_in_inactive_LAr(df_evt_all_hits::DataFrame)
+Function to the hits in the inactive LAr between the field cage and the primary membrane of the cryostat
+"""
+function get_hits_in_inactive_LAr(df_evt_all_hits::DataFrame)
+    active_LAr_x = 3000.0
+    active_LAr_y = 725.0
+    active_LAr_z = 650.0
+
+    df_inactive = df_evt_all_hits[ (abs.(df_evt_all_hits.z) .> active_LAr_z) .|| 
+                                   (abs.(df_evt_all_hits.x) .> active_LAr_x) .|| 
+                                   (abs.(df_evt_all_hits.y) .> active_LAr_y), :]
+    return df_inactive
+end
