@@ -222,22 +222,11 @@ function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Floa
 	    
             data = []
             for a in clustering.clusters
-        	#=Ep = 0.
-                x_moy = 0
-                y_moy = 0
-                z_moy = 0
-                for index_c in a.core_indices
-                    Ep    += data_Ar[index_c,:E]
-                    x_moy += data_Ar[index_c,:x]
-                    y_moy += data_Ar[index_c,:y]
-                    z_moy += data_Ar[index_c,:z]
-                end=#
+            
                 if sum(data_Ar[a.core_indices,:E]) > Emin
-	            push!(data,[sum(data_Ar[a.core_indices,:E]) 
-	                        mean(data_Ar[a.core_indices,:x]) 
-	                        mean(data_Ar[a.core_indices,:y]) 
-	                        mean(data_Ar[a.core_indices,:z])])
+	            push!(data,[sum(data_Ar[a.core_indices,:E]) mean(data_Ar[a.core_indices,:x]) mean(data_Ar[a.core_indices,:y]) mean(data_Ar[a.core_indices,:z])])
 	    	end
+	    	
             end
             if length(data[:,1])>0
 	        data = vcat(data...)
