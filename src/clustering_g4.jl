@@ -201,15 +201,30 @@ function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Floa
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
     Index_evts = get_evts_index(df_Ula)
     nbr_evt_rejected = 0
+    
+    t_to_cm_at_500V_cm = 0.1601
+    
     for i in 1:1:length(Index_evts[:,1])
         first = Index_evts[i,2]
         last  = Index_evts[i,3]
         data_Ar = df_Ula[first:last, :]
+        
+        if size(data_Ar, 1) <= 3
+            if option == true && condition == true 
+                push!(df_Info,[data_Ar[1,:evt], sum(data_Ar[:,:E])])
+            end
+        else
+        
         if length(data_Ar[:,2]) > 3
-            clustering = dbscan(Matrix(permutedims(data_Ar[:,2:4])), radius, min_neighbors = 1, min_cluster_size = 1)
+        
+	    spatial_coords = Matrix(permutedims(data_Ar[:, [:x, :y, :z]]))
+	    t_coords = Matrix(permutedims(data_Ar[:, [:t]])) * t_to_cm_at_500V_cm
+	    space_time_coords = vcat(spatial_coords,t_coords)
+	    clustering = dbscan(space_time_coords, radius, min_neighbors=1, min_cluster_size=1)
+	    
             data = []
             for a in clustering.clusters
-                Ep = 0.
+        	#=Ep = 0.
                 x_moy = 0
                 y_moy = 0
                 z_moy = 0
@@ -218,14 +233,17 @@ function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Floa
                     x_moy += data_Ar[index_c,:x]
                     y_moy += data_Ar[index_c,:y]
                     z_moy += data_Ar[index_c,:z]
-                end
-                if Ep > Emin
-	            push!(data,[Ep x_moy/length(a.core_indices) y_moy/length(a.core_indices) z_moy/length(a.core_indices)])
+                end=#
+                if sum(data_Ar[a.core_indices,:E]) > Emin
+	            push!(data,[sum(data_Ar[a.core_indices,:E]) 
+	                        mean(data_Ar[a.core_indices,:x]) 
+	                        mean(data_Ar[a.core_indices,:y]) 
+	                        mean(data_Ar[a.core_indices,:z]))
 	    	end
             end
             if length(data[:,1])>0
 	        data = vcat(data...)
-        	data_bis = data[(data[:,1] .!= maximum(data[:,1])) .& (data[:,1] .> Emin), :]
+        	data_bis = data[(data[:,1] .< maximum(data[:,1])), :]
         	condition = true
                 for i in 1:1:length(data_bis[:,1])
                     dist = sqrt((data[argmax(data[:,1]),2]-data_bis[i,2])^2+(data[argmax(data[:,1]),3]-data_bis[i,3])^2+(data[argmax(data[:,1]),4]-data_bis[i,4])^2)
