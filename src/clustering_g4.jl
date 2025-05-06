@@ -213,10 +213,8 @@ function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Floa
             if option == true && condition == true 
                 push!(df_Info,[data_Ar[1,:evt], sum(data_Ar[:,:E])])
             end
-        else
-        
-        if length(data_Ar[:,2]) > 3
-        
+            
+        else        
 	    spatial_coords = Matrix(permutedims(data_Ar[:, [:x, :y, :z]]))
 	    t_coords = Matrix(permutedims(data_Ar[:, [:t]])) * t_to_cm_at_500V_cm
 	    space_time_coords = vcat(spatial_coords,t_coords)
