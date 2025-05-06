@@ -238,7 +238,7 @@ function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Floa
 	            push!(data,[sum(data_Ar[a.core_indices,:E]) 
 	                        mean(data_Ar[a.core_indices,:x]) 
 	                        mean(data_Ar[a.core_indices,:y]) 
-	                        mean(data_Ar[a.core_indices,:z]))
+	                        mean(data_Ar[a.core_indices,:z])])
 	    	end
             end
             if length(data[:,1])>0
