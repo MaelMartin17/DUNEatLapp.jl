@@ -197,65 +197,46 @@ function to select the clusters with the highest-energy and with no event betwee
 It accepts a DataFrame for df_Ula, a Float for radius and limit (in centimeters), a float for Emin (in keV) and a Boolen for option. 
 If option is True, it returns a DataFrame with the number of the event and the energy of the cluster. If option is false, it returns the number of events rejected and the number of initial events.
 """
-function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Float64,limit::Float64,option::Bool)
+function Condition_Cluster_Max_Emin_test(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64, option::Bool)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
     Index_evts = get_evts_index(df_Ula)
     nbr_evt_rejected = 0
-    
-    t_to_cm_at_500V_cm = 0.1601
-    
-    for i in 1:1:length(Index_evts[:,1])
-        first = Index_evts[i,2]
-        last  = Index_evts[i,3]
+    t_scale = 0.1601
+
+    for (evt_id, first, last) in eachrow(Index_evts)
         data_Ar = df_Ula[first:last, :]
-        
+
         if size(data_Ar, 1) <= 3
-            if option == true
-                push!(df_Info,[data_Ar[1,:evt], sum(data_Ar[:,:E])])
-            end
-            
-        else        
-	    spatial_coords = Matrix(permutedims(data_Ar[:, [:x, :y, :z]]))
-	    t_coords = Matrix(permutedims(data_Ar[:, [:t]])) * t_to_cm_at_500V_cm
-	    space_time_coords = vcat(spatial_coords,t_coords)
-	    clustering = dbscan(space_time_coords, radius, min_neighbors=1, min_cluster_size=1)
-	    
-            data = []
-            for a in clustering.clusters
-            
-                if sum(data_Ar[a.core_indices,:E]) > Emin
-	            push!(data,[sum(data_Ar[a.core_indices,:E]) mean(data_Ar[a.core_indices,:x]) mean(data_Ar[a.core_indices,:y]) mean(data_Ar[a.core_indices,:z])])
-	    	end
-	    	
-            end
-            if length(data[:,1])>0
-	        data = vcat(data...)
-        	data_bis = data[(data[:,1] .< maximum(data[:,1])), :]
-        	condition = true
-                for i in 1:1:length(data_bis[:,1])
-                    dist = sqrt((data[argmax(data[:,1]),2]-data_bis[i,2])^2+(data[argmax(data[:,1]),3]-data_bis[i,3])^2+(data[argmax(data[:,1]),4]-data_bis[i,4])^2)
-                    if dist < limit
-                        condition = false 
-                        nbr_evt_rejected += 1
-                        break
-                    else 
-                        continue
-                    end
-                end
-            else 
-                nbr_evt_rejected += 1
-                condition = false
-            end
-            if option == true && condition == true 
-                push!(df_Info,[data_Ar[1,:evt], maximum(data[:,1])])
-            end
+            option && push!(df_Info, [data_Ar[1, :evt], sum(data_Ar[:, :E])])
+            continue
+        end
+
+        coords = vcat(permutedims(Matrix(data_Ar[:, [:x, :y, :z]])),
+                      permutedims(Matrix(data_Ar[:, [:t]])) * t_scale)
+        clusters = dbscan(coords, radius, min_neighbors=1, min_cluster_size=1)
+
+        data = [ [sum(data_Ar[c.core_indices, :E]) mean(data_Ar[c.core_indices, :x]) mean(data_Ar[c.core_indices, :y]) mean(data_Ar[c.core_indices, :z])] for c in clusters.clusters if sum(data_Ar[c.core_indices, :E]) > Emin ]
+
+        if isempty(data)
+            nbr_evt_rejected += 1
+            continue
+        end
+
+        data = vcat(data...)
+        main_idx = argmax(data[:, 1])
+        main_cluster = data[main_idx, :]
+        others = data[setdiff(1:end, main_idx), :]
+
+        too_close = any(sqrt(sum((main_cluster[2:4] .- row[2:4]).^2)) < limit for row in eachrow(others))
+
+        if too_close
+            nbr_evt_rejected += 1
+        elseif option
+            push!(df_Info, [data_Ar[1, :evt], main_cluster[1]])
         end
     end
-    if option == true 
-        return df_Info
-    else
-        return nbr_evt_rejected, length(Index_evts[:,1])
-    end
+
+    return option ? df_Info : (nbr_evt_rejected, nrow(Index_evts))
 end
 
 #_______________________________________________________________________________________________________________________
