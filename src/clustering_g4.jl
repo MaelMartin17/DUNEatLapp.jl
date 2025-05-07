@@ -197,7 +197,7 @@ function to select the clusters with the highest-energy and with no event betwee
 It accepts a DataFrame for df_Ula, a Float for radius and limit (in centimeters), a float for Emin (in keV) and a Boolen for option. 
 If option is True, it returns a DataFrame with the number of the event and the energy of the cluster. If option is false, it returns the number of events rejected and the number of initial events.
 """
-function Condition_Cluster_Max_Emin_test(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64, option::Bool)
+function Condition_Cluster_Max_Emin(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64, option::Bool)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
     Index_evts = get_evts_index(df_Ula)
     nbr_evt_rejected = 0
