@@ -210,7 +210,7 @@ function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Floa
         data_Ar = df_Ula[first:last, :]
         
         if size(data_Ar, 1) <= 3
-            if option == true && condition == true 
+            if option == true
                 push!(df_Info,[data_Ar[1,:evt], sum(data_Ar[:,:E])])
             end
             
