@@ -34,6 +34,7 @@ export Single_Hits_lardon
 export Single_Hits_lardon_old
 export nbr_cluster
 export Condition_Cluster_Max_Emin
+export Condition_Cluster_Max_Emin_ArCascade
 export get_hits_in_active_LAr_TPC
 export get_hits_in_inactive_LAr
 export get_clusters_vertex_and_energy_of_evt_space_time
