@@ -163,16 +163,22 @@ function cluster_energy_Max(df::DataFrame,radius::Float64)
 function to get the cluster with the highest energy.
 It accepts a DataFrame for df and a Float for radius (in centimeters). It returns a DataFrame with the number of the event and the energy of the cluster.
 """
-function cluster_energy_Max(df::DataFrame,radius::Float64)
+function Cluster_energy_Max(df::DataFrame,radius::Float64,Emin::Float64)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
     Index_evts = get_evts_index(df)
-    for i in 1:1:length(Index_evts[:,1])
-        first = Index_evts[i,2]
-        last  = Index_evts[i,3]
-        data_Ar = df[first:last,:]
-        if length(data_Ar[:,2]) > 3
+    
+    for (evt_id, first, last) in eachrow(Index_evts)
+        data_Ar = df_Ula[first:last, :]
+        
+	if size(data_Ar, 1) <= 3 && sum(data_Ar[:, :E]) > Emin
+            push!(df_Info, [data_Ar[1, :evt], sum(data_Ar[:, :E])])
+        end
+        
+        elseif length(data_Ar[:,2]) > 3
+        
             clustering = dbscan(Matrix(permutedims(data_Ar[:,2:4])), radius, min_neighbors = 1, min_cluster_size = 1)
             E_c = 0
+            
             for a in clustering.clusters
                 Ep = 0.
                 for index_c in a.core_indices
@@ -182,9 +188,9 @@ function cluster_energy_Max(df::DataFrame,radius::Float64)
                     E_c = Ep
                 end        
             end
-            push!(df_Info,[data_Ar[1,:evt], E_c])
-        else
-            push!(df_Info,[data_Ar[1,:evt], sum(data_Ar[:,:E])])
+            if E_c > Emin
+            	push!(df_Info,[data_Ar[1,:evt], E_c])
+            end
         end
     end
     return df_Info
