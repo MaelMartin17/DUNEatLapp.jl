@@ -172,8 +172,7 @@ function Cluster_energy_Max(df::DataFrame,radius::Float64,Emin::Float64)
         
 	if size(data_Ar, 1) <= 3 && sum(data_Ar[:, :E]) > Emin
             push!(df_Info, [data_Ar[1, :evt], sum(data_Ar[:, :E])])
-        end
-        
+               
         elseif length(data_Ar[:,2]) > 3
         
             clustering = dbscan(Matrix(permutedims(data_Ar[:,2:4])), radius, min_neighbors = 1, min_cluster_size = 1)
