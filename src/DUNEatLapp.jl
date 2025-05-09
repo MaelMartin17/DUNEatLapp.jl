@@ -23,7 +23,7 @@ export get_n_primaries
 export get_rate_neutron_captures_Ar
 export get_info_neutron_captures_Ar
 export get_primary_vertex
-export cluster_energy_Max
+export Cluster_energy_Max
 export get_clusters_energy_of_evt
 export get_clusters_vertex_and_energy_of_evt
 export process_clustering_neutron_file
