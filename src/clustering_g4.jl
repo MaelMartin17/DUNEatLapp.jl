@@ -168,7 +168,7 @@ function Cluster_energy_Max(df::DataFrame,radius::Float64,Emin::Float64)
     Index_evts = get_evts_index(df)
     
     for (evt_id, first, last) in eachrow(Index_evts)
-        data_Ar = df_Ula[first:last, :]
+        data_Ar = df[first:last, :]
         
 	if size(data_Ar, 1) <= 3 && sum(data_Ar[:, :E]) > Emin
             push!(df_Info, [data_Ar[1, :evt], sum(data_Ar[:, :E])])
