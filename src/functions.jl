@@ -9,6 +9,27 @@ function greet_DUNEatLapp()
 end
 
 """
+	moving_window_filter(w_in::Vector, window::Int)
+Function to apply a moving average window filter
+It accepts a waveform and the size of the window to perform the average
+It returns a new waveform
+"""
+function moving_window_filter(w_in::Vector{<:Real}, window::Int)
+    w_out = zeros(length(w_in))
+    half_window = window ÷ 2
+    for i = 1 : 1 : half_window
+        w_out[i] = sum(w_in[i:i+half_window]) / (half_window + 1)
+    end
+    for i = half_window + 1 : 1 : length(w_in)-half_window
+        w_out[i] = sum(w_in[i-half_window:i+half_window]) / (window + 1)
+    end
+    for i = length(w_in)- half_window + 1 : 1 : length(w_in)
+        w_out[i] = sum(w_in[i-half_window:i]) / (half_window + 1)
+    end
+    return w_out
+end
+
+"""
 function apply_E_resolution(True_E_data::Vector, E_resolution::Int)
 Function to apply an energy resolution on data. This resolution comes from the MicroBoone experiment and it is by default at 10% for 1 MeV.
 To adjust the resolution, you have to take in account the 10 % and add or subtract to obtain the the desired value.

@@ -39,6 +39,7 @@ export get_hits_in_active_LAr_TPC
 export get_hits_in_inactive_LAr
 export get_clusters_vertex_and_energy_of_evt_space_time
 export find_n_clusters_in_radius
+export moving_window_filter
 
 include("functions.jl")
 include("clustering_g4.jl")
