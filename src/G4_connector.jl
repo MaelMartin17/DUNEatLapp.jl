@@ -86,3 +86,25 @@ function get_hits_in_inactive_LAr(df_evt_all_hits::DataFrame)
                                    (abs.(df_evt_all_hits.y) .> active_LAr_y), :]
     return df_inactive
 end
+
+"""
+function get_hits_in_active_LAr_TPC_Lateral_fidu(df_evt_all_hits::DataFrame,fidu_x::Float64, fidu_z::Float64)
+Function to filter the hits of a given event and select only hits in active region of the active volume
+It uses the fact that the CRPs/cathode represents a surface of 6000x1300 cm2
+For fiducialization purposes a given fiducialization can also be used (in cm)
+"""
+function get_hits_in_active_LAr_TPC_Lateral_fidu(df_evt_all_hits::DataFrame, fidu_x::Float64, fidu_z::Float64)
+    active_LAr_x = 3000.0
+    active_LAr_y = 727.0
+    active_LAr_z = 625.0
+
+    active_x = active_LAr_x - fidu_x
+    active_y = active_LAr_y 
+    active_z = active_LAr_z - fidu_z
+
+    df_active = df_evt_all_hits[ (abs.(df_evt_all_hits.x) .< active_x) .&& 
+                                 (abs.(df_evt_all_hits.y) .< active_y) .&& 
+                                 (abs.(df_evt_all_hits.z) .< active_z), :]
+
+    return df_active
+end
