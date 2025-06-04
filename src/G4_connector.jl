@@ -8,6 +8,7 @@ function get_evts_index(df::DataFrame)
     event_number = df[1,:evt]
     evts_info = Vector{Vector{Int}}()
     start_evt_index = 1
+    end_evt_index = 0
     # Iterate through rows to identify event boundaries
     for i = 1 : 1 : length(df[!,:evt])
         if  event_number == df[i,:evt]
