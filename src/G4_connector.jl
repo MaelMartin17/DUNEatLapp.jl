@@ -41,6 +41,15 @@ function get_n_primaries(my_file::String)
 end
 
 """
+function get_number_of_events(my_file::String)
+Get the number of events using a different method as get_n_primaries
+"""
+function get_number_of_events(my_file::String)
+    df = CSV.File(IOBuffer(last(eachline(my_file))); comment="#",header=["evt","pdg","E","x","y","z"])
+    return df.evt[1]+1
+end
+
+"""
 function get_primary_vertex(my_file::String)
 function to get the primary info from a csv file into a data frame
 It accepts the name of the file and returns a data frame

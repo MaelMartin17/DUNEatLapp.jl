@@ -20,6 +20,7 @@ export apply_std_E_resolution
 export get_sampling
 export get_bin_centers 
 export get_n_primaries
+export get_number_of_events
 export get_rate_neutron_captures_Ar
 export get_info_neutron_captures_Ar
 export get_primary_vertex
