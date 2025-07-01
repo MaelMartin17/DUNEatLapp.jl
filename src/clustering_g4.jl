@@ -437,3 +437,28 @@ function full_process_clustering_neutron_file(df::DataFrame,radius::Float64,n_Ar
     return clusters_info_E, clusters_info_max_E, clusters_info_E_bar, clusters_info_E_pre_post, clusters_info_max_E_pre_post, clusters_info_E_pre_post_bar, clusters_info_E_other, clusters_info_max_E_other, clusters_info_E_other_bar
 end
 #_______________________________________________________________________________________________________________________
+"""
+function full_process_clustering_file_active(df::DataFrame,radius::Float64)
+function to process a full file using the dbscan algorithm, it returns the clusters of each event and the barycenters
+"""
+function full_process_clustering_file_active(df::DataFrame,radius::Float64)
+    clusters_info_E = Vector{<:AbstractFloat}[]
+    clusters_info_E_bar = []
+    Index_evts = get_evts_index(df)
+    #loop over all the events in the file
+    for i in 1:1:length(Index_evts[:,1])
+        i_evt = Index_evts[i,1] + 1 #since the index in geant4 starts at 0
+        first = Index_evts[i,2]
+        last  = Index_evts[i,3]
+        data_Ar_evt = get_hits_in_active_LAr_TPC(df[first:last,:]) #view to avoid copying
+        if size(data_Ar_evt)[1] == 0
+            continue
+        end
+        #cluster hits
+        cl_all, pos_r = get_clusters_vertex_and_energy_of_evt_space_time(data_Ar_evt,radius)
+        push!(clusters_info_E,cl_all)
+        push!(clusters_info_E_bar,pos_r)
+    end
+    return clusters_info_E, clusters_info_E_bar
+end
+#_______________________________________________________________________________________________________________________
