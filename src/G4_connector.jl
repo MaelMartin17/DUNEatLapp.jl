@@ -68,8 +68,8 @@ For fiducialization purposes a given fiducialization can also be used (in cm)
 """
 function get_hits_in_active_LAr_TPC(df_evt_all_hits::DataFrame, fidu::Float64 = 0.0)
     active_LAr_x = 3000.0
-    active_LAr_y = 727.0
-    active_LAr_z = 625.0
+    active_LAr_y = 672.0
+    active_LAr_z = 680.0
 
     active_x = active_LAr_x - fidu
     active_y = active_LAr_y - fidu
@@ -88,8 +88,8 @@ Function to the hits in the inactive LAr between the field cage and the primary 
 """
 function get_hits_in_inactive_LAr(df_evt_all_hits::DataFrame)
     active_LAr_x = 3000.0
-    active_LAr_y = 727.0
-    active_LAr_z = 625.0
+    active_LAr_y = 672.0
+    active_LAr_z = 680.0
 
     df_inactive = df_evt_all_hits[ (abs.(df_evt_all_hits.z) .> active_LAr_z) .|| 
                                    (abs.(df_evt_all_hits.x) .> active_LAr_x) .|| 
@@ -105,8 +105,8 @@ For fiducialization purposes a given fiducialization can also be used (in cm)
 """
 function get_hits_in_active_LAr_TPC_Lateral_fidu(df_evt_all_hits::DataFrame, fidu_x::Float64, fidu_z::Float64)
     active_LAr_x = 3000.0
-    active_LAr_y = 727.0
-    active_LAr_z = 625.0
+    active_LAr_y = 672.0
+    active_LAr_z = 680.0
 
     active_x = active_LAr_x - fidu_x
     active_y = active_LAr_y 
