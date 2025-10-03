@@ -163,7 +163,7 @@ function cluster_energy_Max(df::DataFrame,radius::Float64)
 function to get the cluster with the highest energy.
 It accepts a DataFrame for df and a Float for radius (in centimeters). It returns a DataFrame with the number of the event and the energy of the cluster.
 """
-function Cluster_energy_Max(df::DataFrame,radius::Float64,Emin::Float64)
+function E_MainCluster(df::DataFrame,radius::Float64,Emin::Float64)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
     Index_evts = get_evts_index(df)
     
@@ -197,12 +197,12 @@ end
 #_______________________________________________________________________________________________________________________
 
 """
-function Condition_Cluster_Max_Emin(df_Ula::DataFrame,radius::Float64,Emin::Float64,limit::Float64,option::Bool)
+function E_MainCluster_and_NbrofDiscrimination_Emin(df_Ula::DataFrame,radius::Float64,Emin::Float64,limit::Float64,option::Bool)
 function to select the clusters with the highest-energy and with no event between them and the limit variable. All clusters under Emin are removed.
 It accepts a DataFrame for df_Ula, a Float for radius and limit (in centimeters), a float for Emin (in keV) and a Boolen for option. 
 If option is True, it returns a DataFrame with the number of the event and the energy of the cluster. If option is false, it returns the number of events rejected and the number of initial events.
 """
-function Condition_Cluster_Max_Emin(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64, option::Bool)
+function E_MainCluster_and_NbrofDiscrimination_Emin(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64, option::Bool)
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
     Index_evts = get_evts_index(df_Ula)
     nbr_evt_rejected = 0
@@ -251,7 +251,7 @@ function to select the clusters coming from the n-Ar cascade, with the highest-e
 It accepts a DataFrame for df_Ula, a Float for radius and limit (in centimeters), a float for Emin (in keV) and a Boolen for option. 
 If option is True, it returns a DataFrame with the number of the event and the energy of the cluster. If option is false, it returns the number of events rejected and the number of initial events.
 """
-function Condition_Cluster_Max_Emin_ArCascade(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64, option::Bool, n_Ar_info::Vector{Int64},t_n_Ar_info::Vector{<:Real})
+function E_MainCluster_and_NbrofDiscrimination_Emin_ArCascade(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64, option::Bool, n_Ar_info::Vector{Int64},t_n_Ar_info::Vector{<:Real})
     df_Info = DataFrame(evt = Int32[], E_max = Float32[])
     
     Index_evts = get_evts_index(df_Ula)
