@@ -462,3 +462,65 @@ function full_process_clustering_file_active(df::DataFrame,radius::Float64)
     return clusters_info_E, clusters_info_E_bar
 end
 #_______________________________________________________________________________________________________________________
+"""
+function Create_df_Main_Cluster_Discrimination_Emin(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64)
+function to create a dataframe of the main cluster if the discrimination and Emin are respected. It returns a dataframe.
+"""
+function Condition_Cluster_Max_Emin_test(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64)
+    Liste_mainCluster = []
+    Index_evts = get_evts_index(df_Ula)
+    nbr_evt_rejected = 0
+    t_scale = 0.1601
+
+    for (evt_id, first, last) in ProgressBar(eachrow(Index_evts))
+        data_Ar = df_Ula[first:last, :]
+
+        if size(data_Ar, 1) <= 3 && sum(data_Ar[:, :E]) > Emin
+            push!(Liste_mainCluster, data_Ar)
+            continue
+        end
+
+        coords = vcat(permutedims(Matrix(data_Ar[:, [:x, :y, :z]])),
+                      permutedims(Matrix(data_Ar[:, [:t]])) * t_scale)
+        clusters = dbscan(coords, radius, min_neighbors=1, min_cluster_size=1)
+
+        data = [ [sum(data_Ar[c.core_indices, :E]) mean(data_Ar[c.core_indices, :x]) mean(data_Ar[c.core_indices, :y]) mean(data_Ar[c.core_indices, :z])] for c in clusters.clusters]
+                
+        data = vcat(data...)
+        a_Cmax = clusters.clusters[argmax(data[:, 1])]    
+        data_Cmax = data_Ar[a_Cmax.core_indices,:]
+
+        data = data[data[:,1].>100.,:]
+        
+        if isempty(data)
+            continue
+        end
+
+        main_idx = argmax(data[:, 1])
+        main_cluster = data[main_idx, :]
+
+        others = data[setdiff(1:end, main_idx), :]
+        too_close = any(sqrt(sum((main_cluster[2:4] .- row[2:4]).^2)) < limit for row in eachrow(others))
+        
+        if too_close == false
+            push!(Liste_mainCluster, data_Cmax)
+        end
+    end
+    return Liste_mainCluster
+end
+#_______________________________________________________________________________________________________________________
+"""
+function create_df_vectors_for_costheta(l, p, t, limit)
+function to create a dataframe of coordinates to compute costheta. It returns a dataframe.
+"""
+function create_df_vectors_for_costheta(l, p, t, limit)
+    df_ini  = DataFrame(l = l, p = p, t = t)
+    df_sort = sort(df_ini, :t)
+    df      = DataFrame(l = df_sort[:,:l] .- df_sort[1,:l], p = df_sort[:,:p] .- df_sort[1,:p])
+    df_half = df
+    if length(df_half[:,1]) > limit
+        df_half = df_half[1:limit,:]
+    end
+    return df_half
+end
+#_______________________________________________________________________________________________________________________
