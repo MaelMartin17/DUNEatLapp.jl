@@ -466,7 +466,7 @@ end
 function Create_df_Main_Cluster_Discrimination_Emin(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64)
 function to create a dataframe of the main cluster if the discrimination and Emin are respected. It returns a dataframe.
 """
-function Condition_Cluster_Max_Emin_test(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64)
+function Create_df_Main_Cluster_Discrimination_Emin(df_Ula::DataFrame, radius::Float64, Emin::Float64, limit::Float64)
     Liste_mainCluster = []
     Index_evts = get_evts_index(df_Ula)
     nbr_evt_rejected = 0
