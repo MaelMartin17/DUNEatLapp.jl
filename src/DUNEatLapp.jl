@@ -45,6 +45,8 @@ export get_hits_in_active_LAr_TPC_Lateral_fidu
 export moving_window_filter
 export Create_df_Main_Cluster_Discrimination_Emin
 export create_df_vectors_for_costheta
+export Main_Cluster
+export Compute_Sun_initialVector
 
 include("functions.jl")
 include("clustering_g4.jl")

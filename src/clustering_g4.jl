@@ -524,3 +524,19 @@ function create_df_vectors_for_costheta(l, p, t, limit)
     return df_half
 end
 #_______________________________________________________________________________________________________________________
+"""
+function Main_Cluster(clustering_evt, data_evt)
+function to create a dataframe with all the deposits of the Main cluster for an event. It returns a dataframe and a float.
+"""
+function Main_Cluster(clustering_evt, data_evt)
+    Liste_Energy = []
+    for a in clustering_evt.clusters
+        Sum_E = sum(data_evt[a.core_indices,:E])
+        push!(Liste_Energy,Sum_E)
+    end
+    Eelec = maximum(Liste_Energy)
+    a = clustering_evt.clusters[argmax(Liste_Energy)]    
+    data_Cluster = data_evt[a.core_indices,:]
+    return data_Cluster, Eelec
+end
+#_______________________________________________________________________________________________________________________

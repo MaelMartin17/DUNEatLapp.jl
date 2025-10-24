@@ -1,4 +1,4 @@
-
+#_______________________________________________________________________________________________________________________
 """
 function greet_DUNEatLapp()
 Function to test if the package works
@@ -7,7 +7,7 @@ There is no entry and the output is Hello DUNEatLapp!
 function greet_DUNEatLapp()
     return "Hello DUNEatLapp!"
 end
-
+#_______________________________________________________________________________________________________________________
 """
 	moving_window_filter(w_in::Vector, window::Int)
 Function to apply a moving average window filter
@@ -28,7 +28,7 @@ function moving_window_filter(w_in::Vector{<:Real}, window::Int)
     end
     return w_out
 end
-
+#_______________________________________________________________________________________________________________________
 """
 function apply_E_resolution(True_E_data::Vector, E_resolution::Int)
 Function to apply an energy resolution on data. This resolution comes from the MicroBoone experiment and it is by default at 10% for 1 MeV.
@@ -45,7 +45,7 @@ function apply_E_resolution(True_E_data::Vector,E_resolution::Int)
     end
     return distorted_E
 end
-
+#_______________________________________________________________________________________________________________________
 """
 function apply_std_E_resolution(True_E_data::Vector,E_resolution::Real)
 function to apply a sigma/E = resolution / sqrt(E) energy resolution
@@ -61,7 +61,7 @@ function apply_std_E_resolution(True_E_data::Vector,E_resolution::Real)
     end
     return distorted_E
 end
-
+#_______________________________________________________________________________________________________________________
 """
 	 get_sampling(h::Histogram,n_samples::Int,res::Float64)
 Funtion to sample from a histogram and apply an energy resolution
@@ -77,7 +77,7 @@ function get_sampling(h::Histogram,n_samples::Int,res::Float64)
     end
     return apply_std_E_resolution(E_distribution,res)
 end
-
+#_______________________________________________________________________________________________________________________
 """
     get_sampling(bin_centers::Vector{Float64},bin_weights::Vector{Float64},n_samples::Int,res::Float64)
 Funtion to sample from a distribution and apply an energy resolution
@@ -93,7 +93,7 @@ function get_sampling(bin_centers::Vector{Float64},bin_weights::Vector{Float64},
     end
     return apply_std_E_resolution(E_distribution,res)
 end
-
+#_______________________________________________________________________________________________________________________
 """
  	get_bin_centers(h::Histogram)
 Function to get the bin centers of a given histogram
@@ -107,3 +107,20 @@ function get_bin_centers(h::Histogram)
     bin_centers = (bin_edges_right + bin_edges_left) / 2
     return bin_centers
 end
+#_______________________________________________________________________________________________________________________
+"""
+function Compute_Sun_initialVector(Event::Matrix)
+function that takes for input a output.txt file from Marley and it computes the vector of the initial neutrino.
+It returns a list of vectors.
+"""
+function Compute_Sun_initialVector(Event::Matrix)
+    Liste_iniV = []
+    for i in 1:length(Event[:,1])
+        if Event[i,1] == 2
+            Vector_nu = [Event[i+1,3], Event[i+1,4], Event[i+1,5]]
+            push!(Liste_iniV, Vector_nu)
+        end
+    end
+    return  Liste_iniV
+end
+#_______________________________________________________________________________________________________________________
