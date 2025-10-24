@@ -48,7 +48,7 @@ function Single_Hits_lardon(path::String)
                 A[i].charge_pos, 
                 A[i].d_bary_max, 
                 A[i].d_track_2D, 
-                A[i].veto,
+                A[i].n_veto,
                 B[(A[i].hit_IDs[7])+1].fC_max,
                 A[i].tdc_start,
                 A[i].tdc_stop,
