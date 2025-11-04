@@ -76,3 +76,59 @@ function Single_Hits_lardon_old(path::String)
     end
     return Info
 end
+#_______________________________________________________________________________________________________________________
+function tracks3d_lardon(path::String)
+    Info = DataFrame(
+    Id=Int32[],
+    n_hits=Int32[],
+    n_matched=Int32[],
+    phi_end=Float32[],
+    phi_ini=Float32[],
+    t0_corr=Float32[],
+    t_end=Int32[],
+    t_ini=Int32[],
+    theta_end=Float32[],
+    theta_ini=Float32[],
+    total_charge=Vector[],
+    x_end=Float32[],
+    x_ini=Float32[],
+    y_end=Float32[],
+    y_ini=Float32[],
+    z0_corr=Float64[],
+    z_end=Float32[],
+    z_end_overlap=Float32[]
+    z_ini=Float32[]
+    z_ini_overlap[]);
+    
+    for (root, dirs, files) in walkdir(path)
+        for i in ProgressBar(files)
+            fid = h5open("$(root)/$(i)", "r")
+            SHset = fid["tracks3d"]
+            A = read(SHset);   
+            for i in 1:1:length(A)
+                push!(Info,[
+                A[i].ID,
+                A[i].n_hits,
+                A[i].n_matched, 
+                A[i].phi_end, 
+                A[i].phi_ini, 
+                A[i].t0_corr, 
+                A[i].t_end, 
+                A[i].t_ini, 
+                A[i].theta_end, 
+                A[i].theta_ini, 
+                A[i].total_charge, 
+                A[i].x_end, 
+                A[i].x_ini, 
+                A[i].y_end,
+                A[i].y_ini,
+                A[i].z0_corr,
+                A[i].z_end,
+                A[i].z_end_overlap,
+                A[i].z_ini,
+                A[i].z_ini_overlap
+            end    
+        end
+    end
+    return Info
+end
