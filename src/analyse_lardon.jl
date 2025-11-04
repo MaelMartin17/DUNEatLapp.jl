@@ -98,7 +98,7 @@ function tracks3d_lardon(path::String)
     z_end=Float32[],
     z_end_overlap=Float32[],
     z_ini=Float32[],
-    z_ini_overlap[]);
+    z_ini_overlap=Float32[]);
     
     for (root, dirs, files) in walkdir(path)
         for i in ProgressBar(files)
