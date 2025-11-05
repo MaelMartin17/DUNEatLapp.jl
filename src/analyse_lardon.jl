@@ -80,7 +80,7 @@ end
 function tracks3d_lardon(path::String)
     Info = DataFrame(
     Id=Int32[],
-    n_hits=Int32[],
+    n_hits=Vector[],
     n_matched=Int32[],
     phi_end=Float32[],
     phi_ini=Float32[],
