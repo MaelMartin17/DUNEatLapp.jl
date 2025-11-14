@@ -22,7 +22,8 @@ function Single_Hits_lardon(path::String)
     fc_max=Float32[],
     tdc_start=Vector[],
     tdc_stop=Vector[],
-    t_event=Float64[]);
+    t_event=Float64[],
+    tns_event=Float64[]);
     
     for (root, dirs, files) in walkdir(path)
         for i in ProgressBar(files)
@@ -52,7 +53,8 @@ function Single_Hits_lardon(path::String)
                 B[(A[i].hit_IDs[7])+1].fC_max,
                 A[i].tdc_start,
                 A[i].tdc_stop,
-                C[(A[i].event)+1].time_s])  
+                C[(A[i].event)+1].time_s,
+                C[(A[i].event)+1].time_ns])  
             end    
         end
     end
