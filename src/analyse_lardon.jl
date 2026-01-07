@@ -168,7 +168,7 @@ function hits_in_tracks3dNew(path::String)
 function to collect the data about the hits of a 3d track.
 It receives the path of the directory containing the HDF5 files and it returns a DataFrame with all the hits of the selected 3d tracks and the information about.
 """
-function hits_in_tracks3dNew(path::String)
+function hits_in_tracks3d(path::String)
     # Create the output Dataframe with the wanted variables
     Info = DataFrame(
         Id_file = Int32[],

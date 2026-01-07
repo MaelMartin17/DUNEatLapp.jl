@@ -48,7 +48,7 @@ export create_df_vectors_for_costheta
 export Main_Cluster
 export Compute_Sun_initialVector
 export tracks3d_lardon
-export hits_in_tracks3dNew
+export hits_in_tracks3d
 
 include("functions.jl")
 include("clustering_g4.jl")
