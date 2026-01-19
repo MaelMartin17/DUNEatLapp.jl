@@ -12,6 +12,8 @@ using ProgressBars
 using HDF5
 using StatsBase
 using Distances
+using StaticArrays
+using Plots
 
 export greet_DUNEatLapp
 export get_evts_index
@@ -49,7 +51,13 @@ export Main_Cluster
 export Compute_Sun_initialVector
 export tracks3d_lardon
 export hits_in_tracks3d
+export plot_detector_planes
+export fit_line_3d
+export prepare_data_for_fit
+export project_point_to_line
+export compute_residuals
 
+include("utils.jl")
 include("functions.jl")
 include("clustering_g4.jl")
 include("G4_connector.jl")
