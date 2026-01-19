@@ -13,6 +13,7 @@ using HDF5
 using StatsBase
 using Distances
 using StaticArrays
+using LinearAlgebra
 using Plots
 
 export greet_DUNEatLapp
