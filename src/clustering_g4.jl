@@ -241,7 +241,7 @@ function E_MainCluster_and_NbrofDiscrimination_Emin(df_Ula::DataFrame, radius::F
         end
     end
 
-    return option ? df_Info : (nbr_evt_rejected, nrow(Index_evts))
+    return option ? df_Info : (nbr_evt_rejected, length(Index_evts[:,1]))
 end
 
 #_______________________________________________________________________________________________________________________
