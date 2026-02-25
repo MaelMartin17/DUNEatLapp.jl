@@ -532,7 +532,7 @@ dz = randn(1000)
 y_edges = range(0, 1, length=11)
 z_edges = range(0, 1, length=11)
 
-avg_dx, avg_dy, avg_dz, counts = make_residual_heatmap(x, y, z, dx, dy, dz; axis=\:y, y_edges, z_edges)
+avg_dx, avg_dy, avg_dz, counts = make_residual_heatmap(x, y, z, dx, dy, dz; axis=:y, y_edges, z_edges)
 # Returns binned averages of residuals and counts
 """
 function make_residual_heatmap(
