@@ -57,6 +57,11 @@ export fit_line_3d
 export prepare_data_for_fit
 export project_point_to_line
 export compute_residuals
+export check_selection_vd
+export fit_line_3d_anode
+export compute_true_and_residuals
+export compute_space_charge
+export process_run
 
 include("utils.jl")
 include("functions.jl")
@@ -64,5 +69,6 @@ include("clustering_g4.jl")
 include("G4_connector.jl")
 include("neutron_capture_info.jl")
 include("analyse_lardon.jl")
+include("protoDUNE.jl")
 
 end
