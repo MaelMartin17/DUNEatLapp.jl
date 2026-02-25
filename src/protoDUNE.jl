@@ -464,3 +464,175 @@ function process_run(dir::String)
 
     return Xt_all, Yt_all, Zt_all, Xr_all, Yr_all, Zr_all, R_all
 end
+
+"""
+    make_residual_heatmap(
+        x::AbstractVector,
+        y::AbstractVector,
+        z::AbstractVector,
+        dx::AbstractVector,
+        dy::AbstractVector,
+        dz::AbstractVector;
+        axis = :y,
+        y_edges,
+        z_edges,
+        x_edges,
+        min_counts = 2,
+        x_range = nothing,
+        y_range = nothing
+    ) -> Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Int}}
+
+Compute binned averages of residuals (dx, dy, dz) as a function of a selected coordinate (x or y) and z, producing a residual heatmap.
+
+# Arguments
+- `x::AbstractVector`: Vector of x-coordinates.
+- `y::AbstractVector`: Vector of y-coordinates.
+- `z::AbstractVector`: Vector of z-coordinates.
+- `dx::AbstractVector`: Vector of residuals in the x-direction.
+- `dy::AbstractVector`: Vector of residuals in the y-direction.
+- `dz::AbstractVector`: Vector of residuals in the z-direction.
+
+# Keyword Arguments
+- `axis = :y`: The coordinate axis to bin along. Must be either `:y` or `:x`.
+- `y_edges`: Bin edges for the y-coordinate.
+- `z_edges`: Bin edges for the z-coordinate.
+- `x_edges`: Bin edges for the x-coordinate (used only if `axis = :x`).
+- `min_counts = 2`: Minimum number of entries in a bin to compute the average. Bins with fewer entries are filled with `NaN`.
+- `x_range = nothing`: Optional range `(xmin, xmax)` to filter x-coordinates. If `nothing`, no filtering is applied.
+- `y_range = nothing`: Optional range `(ymin, ymax)` to filter y-coordinates. If `nothing`, no filtering is applied.
+
+# Returns
+- A tuple containing:
+  - `avg_dx`: Matrix of average x-residuals for each bin.
+  - `avg_dy`: Matrix of average y-residuals for each bin.
+  - `avg_dz`: Matrix of average z-residuals for each bin.
+  - `counts`: Matrix of counts for each bin.
+
+# Details
+1. **Binning**:
+   - The function bins the data along the selected `axis` and `z`.
+   - For each point, it checks if the residuals are finite and if the point falls within the specified `x_range` and `y_range` (if provided).
+
+2. **Averaging**:
+   - For each bin, the function computes the average of the residuals (`dx`, `dy`, `dz`) if the bin contains at least `min_counts` entries.
+   - Bins with fewer than `min_counts` entries are filled with `NaN`.
+
+3. **Efficiency**:
+   - The function uses a single-pass algorithm to accumulate sums and counts, minimizing memory allocations.
+
+# Examples
+```jldoctest
+x = rand(1000)
+y = rand(1000)
+z = rand(1000)
+dx = randn(1000)
+dy = randn(1000)
+dz = randn(1000)
+
+y_edges = range(0, 1, length=11)
+z_edges = range(0, 1, length=11)
+
+avg_dx, avg_dy, avg_dz, counts = make_residual_heatmap(x, y, z, dx, dy, dz; axis=\:y, y_edges, z_edges)
+# Returns binned averages of residuals and counts
+"""
+function make_residual_heatmap(
+    x::AbstractVector,
+    y::AbstractVector,
+    z::AbstractVector,
+    dx::AbstractVector,
+    dy::AbstractVector,
+    dz::AbstractVector;
+    axis = :y,
+    y_edges,
+    z_edges,
+    x_edges,
+    min_counts = 2,
+    x_range = nothing,   # NEW
+    y_range = nothing    # NEW
+)
+
+    N = length(x)
+
+    # --- Select binning coordinate ---
+    if axis == :y
+        bin_edges = y_edges
+        coord = y
+    elseif axis == :x
+        bin_edges = x_edges
+        coord = x
+    else
+        throw(ArgumentError("axis must be :y or :x"))
+    end
+
+    nbins = length(bin_edges) - 1
+    nbins_z = length(z_edges) - 1
+
+    # --- Initialize accumulators ---
+    sum_dx = zeros(nbins_z, nbins)
+    sum_dy = zeros(nbins_z, nbins)
+    sum_dz = zeros(nbins_z, nbins)
+    counts = zeros(Int, nbins_z, nbins)
+
+    # ==========================================================
+    #                   Single-pass binning
+    # ==========================================================
+
+    @inbounds for i in 1:N
+
+        # Skip invalid residuals
+        if !isfinite(dx[i]) || !isfinite(dy[i]) || !isfinite(dz[i])
+            continue
+        end
+
+        xi = x[i]
+        yi = y[i]
+        zi = z[i]
+
+        # --- Apply spatial cuts (no allocations) ---
+        if x_range !== nothing
+            (xmin, xmax) = x_range
+            if xi < xmin || xi > xmax
+                continue
+            end
+        end
+
+        if y_range !== nothing
+            (ymin, ymax) = y_range
+            if yi < ymin || yi > ymax
+                continue
+            end
+        end
+
+        binval = coord[i]
+
+        ibin = searchsortedlast(bin_edges, binval)
+        iz   = searchsortedlast(z_edges, zi)
+
+        if 1 ≤ ibin ≤ nbins && 1 ≤ iz ≤ nbins_z
+            sum_dx[iz, ibin] += dx[i]
+            sum_dy[iz, ibin] += dy[i]
+            sum_dz[iz, ibin] += dz[i]
+            counts[iz, ibin] += 1
+        end
+    end
+
+    # ==========================================================
+    #                   Compute averages
+    # ==========================================================
+
+    avg_dx = fill(NaN, nbins_z, nbins)
+    avg_dy = fill(NaN, nbins_z, nbins)
+    avg_dz = fill(NaN, nbins_z, nbins)
+
+    @inbounds for iz in 1:nbins_z, ibin in 1:nbins
+        c = counts[iz, ibin]
+        if c ≥ min_counts
+            inv = 1.0 / c
+            avg_dx[iz, ibin] = sum_dx[iz, ibin] * inv
+            avg_dy[iz, ibin] = sum_dy[iz, ibin] * inv
+            avg_dz[iz, ibin] = sum_dz[iz, ibin] * inv
+        end
+    end
+
+    return avg_dx, avg_dy, avg_dz, counts
+end

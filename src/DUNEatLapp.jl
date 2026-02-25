@@ -62,6 +62,7 @@ export fit_line_3d_anode
 export compute_true_and_residuals
 export compute_space_charge
 export process_run
+export make_residual_heatmap
 
 include("utils.jl")
 include("functions.jl")
