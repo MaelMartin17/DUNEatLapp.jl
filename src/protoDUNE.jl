@@ -641,14 +641,14 @@ end
 ----------------Fonctions to study space charge with Anode to Anode tracks----------------
 """
 
-function fit_line_3d_anode_to_anode(track, track_C, zcorr::Float64=0.0, zcorr_C::Float64=0.0, nFit::Int=10, zLow = 288.0, zHigh = 338.0)
+function fit_line_3d_anode_to_anode(track_top, track_bottom, zcorr_top::Float64=0.0, zcorr_bottom::Float64=0.0, nFit::Int=10, zLow = 288.0, zHigh = 338.0)
 
     # ---- First pass: find corrected z minimum ----
     zmin =  Inf
     zmax = -Inf
     # Find max and min in drift axis reach near one of the anodes
-    @inbounds for row in track
-        zc = row[3] + zcorr
+    @inbounds for row in track_top
+        zc = row[3] + zcorr_top
         zc < zmin && (zmin = zc)
         zc > zmax && (zmax = zc)
     end
@@ -665,8 +665,8 @@ function fit_line_3d_anode_to_anode(track, track_C, zcorr::Float64=0.0, zcorr_C:
     μx = 0.0; μy = 0.0; μz = 0.0
     N = 0
     #check hits inside selection
-    @inbounds for row in track # first track
-        zc = row[3] + zcorr
+    @inbounds for row in track_top # first track_top
+        zc = row[3] + zcorr_top
         if z_low ≤ zc ≤ z_high
             μx += row[1]
             μy += row[2]
@@ -674,8 +674,8 @@ function fit_line_3d_anode_to_anode(track, track_C, zcorr::Float64=0.0, zcorr_C:
             N += 1
         end
     end
-    @inbounds for row in track_C # track on the other cathode side
-        zc = row[3] + zcorr_C
+    @inbounds for row in track_bottom # track_top on the other cathode side
+        zc = row[3] + zcorr_bottom
         if -z_high ≤ zc ≤ -z_low
             μx += row[1]
             μy += row[2]
@@ -696,8 +696,8 @@ function fit_line_3d_anode_to_anode(track, track_C, zcorr::Float64=0.0, zcorr_C:
     Sxx=0.0; Sxy=0.0; Sxz=0.0
     Syy=0.0; Syz=0.0; Szz=0.0
 
-    @inbounds for row in track # first track
-        zc = row[3] + zcorr
+    @inbounds for row in track_top # first track_top
+        zc = row[3] + zcorr_top
         if z_low ≤ zc ≤ z_high
             dx = row[1] - μx
             dy = row[2] - μy
@@ -712,8 +712,8 @@ function fit_line_3d_anode_to_anode(track, track_C, zcorr::Float64=0.0, zcorr_C:
         end
     end
 
-    @inbounds for row in track_C # track on the other cathode side
-        zc = row[3] + zcorr_C
+    @inbounds for row in track_bottom # track_top on the other cathode side
+        zc = row[3] + zcorr_bottom
         if -z_high ≤ zc ≤ -z_low
             dx = row[1] - μx
             dy = row[2] - μy
@@ -740,8 +740,8 @@ function fit_line_3d_anode_to_anode(track, track_C, zcorr::Float64=0.0, zcorr_C:
     # ---- RMS only on selected hits ----
     sumsq = 0.0
 
-    @inbounds for row in track # first track
-        zc = row[3] + zcorr
+    @inbounds for row in track_top # first track_top
+        zc = row[3] + zcorr_top
         if z_low ≤ zc ≤ z_high
             dx = row[1] - μx
             dy = row[2] - μy
@@ -751,8 +751,8 @@ function fit_line_3d_anode_to_anode(track, track_C, zcorr::Float64=0.0, zcorr_C:
             sumsq += dx*dx + dy*dy + dz*dz - proj^2
         end
     end
-    @inbounds for row in track_C # track on the other cathode side
-        zc = row[3] + zcorr_C
+    @inbounds for row in track_bottom # track_top on the other cathode side
+        zc = row[3] + zcorr_bottom
         if -z_high ≤ zc ≤ -z_low
             dx = row[1] - μx
             dy = row[2] - μy
