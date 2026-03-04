@@ -636,3 +636,258 @@ function make_residual_heatmap(
 
     return avg_dx, avg_dy, avg_dz, counts
 end
+
+"""
+----------------Fonctions to study space charge with Anode to Anode tracks----------------
+"""
+
+function fit_line_3d_anode_to_anode(track, track_C, zcorr::Float64=0.0, zcorr_C::Float64=0.0, nFit::Int=10, zLow = 288.0, zHigh = 338.0)
+
+    # ---- First pass: find corrected z minimum ----
+    zmin =  Inf
+    zmax = -Inf
+    # Find max and min in drift axis reach near one of the anodes
+    @inbounds for row in track
+        zc = row[3] + zcorr
+        zc < zmin && (zmin = zc)
+        zc > zmax && (zmax = zc)
+    end
+
+    # ---- Define anode window for fit----
+    if zmin < -300.0
+        z_low  = -zHigh
+        z_high = -zLow
+    else
+        z_low  = zLow
+        z_high = zHigh
+    end
+    # ---- First pass: compute mean only on selected hits ----
+    μx = 0.0; μy = 0.0; μz = 0.0
+    N = 0
+    #check hits inside selection
+    @inbounds for row in track # first track
+        zc = row[3] + zcorr
+        if z_low ≤ zc ≤ z_high
+            μx += row[1]
+            μy += row[2]
+            μz += zc
+            N += 1
+        end
+    end
+    @inbounds for row in track_C # track on the other cathode side
+        zc = row[3] + zcorr_C
+        if -z_high ≤ zc ≤ -z_low
+            μx += row[1]
+            μy += row[2]
+            μz += zc
+            N += 1
+        end
+    end
+
+    #return z_between, z_between_C
+
+    #Ask at least 10 hits for the fit
+    N > nFit || return nothing
+    
+
+    μx /= N; μy /= N; μz /= N
+
+    # ---- Covariance on selected hits ----
+    Sxx=0.0; Sxy=0.0; Sxz=0.0
+    Syy=0.0; Syz=0.0; Szz=0.0
+
+    @inbounds for row in track # first track
+        zc = row[3] + zcorr
+        if z_low ≤ zc ≤ z_high
+            dx = row[1] - μx
+            dy = row[2] - μy
+            dz = zc - μz
+
+            Sxx += dx*dx
+            Sxy += dx*dy
+            Sxz += dx*dz
+            Syy += dy*dy
+            Syz += dy*dz
+            Szz += dz*dz
+        end
+    end
+
+    @inbounds for row in track_C # track on the other cathode side
+        zc = row[3] + zcorr_C
+        if -z_high ≤ zc ≤ -z_low
+            dx = row[1] - μx
+            dy = row[2] - μy
+            dz = zc - μz
+    
+            Sxx += dx*dx
+            Sxy += dx*dy
+            Sxz += dx*dz
+            Syy += dy*dy
+            Syz += dy*dz
+            Szz += dz*dz
+        end
+    end
+
+    cov = Symmetric([
+        Sxx Sxy Sxz;
+        Sxy Syy Syz;
+        Sxz Syz Szz
+    ])
+
+    eigvals, eigvecs = eigen(cov)
+    v = eigvecs[:, argmax(eigvals)]
+
+    # ---- RMS only on selected hits ----
+    sumsq = 0.0
+
+    @inbounds for row in track # first track
+        zc = row[3] + zcorr
+        if z_low ≤ zc ≤ z_high
+            dx = row[1] - μx
+            dy = row[2] - μy
+            dz = zc - μz
+
+            proj = dx*v[1] + dy*v[2] + dz*v[3]
+            sumsq += dx*dx + dy*dy + dz*dz - proj^2
+        end
+    end
+    @inbounds for row in track_C # track on the other cathode side
+        zc = row[3] + zcorr_C
+        if -z_high ≤ zc ≤ -z_low
+            dx = row[1] - μx
+            dy = row[2] - μy
+            dz = zc - μz
+
+            proj = dx*v[1] + dy*v[2] + dz*v[3]
+            sumsq += dx*dx + dy*dy + dz*dz - proj^2
+        end
+    end
+    #security check
+    sumsq > 0 || return nothing
+
+    rms = sqrt(sumsq / N)
+
+    return (μx, μy, μz), v, rms
+end
+
+
+function compute_space_charge_anode_to_anode(filename::String)
+    #read the lardon output
+    dataTracks, dataHits = h5open(filename, "r") do f
+        read(f["tracks3d"]), read(f["trk3d_v2"])
+    end
+
+    ntracks = length(dataTracks)
+    #true and residuals
+    Xt, Yt, Zt, Xr, Yr, Zr, R = Float64[], Float64[], Float64[], Float64[], Float64[], Float64[], Float64[]
+
+    ID_track_anode_to_anode = Int[]
+
+    for itrk in 1:ntracks
+
+        track3D = dataTracks[itrk]
+        track   = dataHits[itrk]
+        #selection 
+        if track3D.is_anode_crosser && track3D.cathode_crosser_ID > -1 && track3D.n_matched > 1 && track3D.d_match < 2.5 && track3D.t0_corr < 9999 && 
+            check_selection_vd(track, track3D.z0_corr) && !(track3D.ID in ID_track_anode_to_anode)
+            
+            #linear fit if track pass selection
+            track3D_cathode = dataTracks[(track3D.cathode_crosser_ID)+1]
+            track_cathode   = dataHits[(track3D.cathode_crosser_ID)+1]
+
+            track3D_cathode.is_anode_crosser && track3D_cathode.cathode_crosser_ID == track3D.ID && track3D_cathode.n_matched > 1 && track3D_cathode.d_match < 2.5 && track3D_cathode.t0_corr < 9999 && 
+                check_selection_vd(track_cathode, track3D_cathode.z0_corr) || continue
+
+            res = fit_line_3d_anode_to_anode(track, track_cathode, track3D.z0_corr, track3D_cathode.z0_corr)
+            res === nothing && continue
+
+            p0, v, rms = res
+            #Only good fits
+            if rms < 0.9
+
+                xt, yt, zt, xr, yr, zr, r =
+                    compute_true_and_residuals(track, p0, v;
+                                            zcorr = track3D.z0_corr)
+
+                append!(Xt, xt)
+                append!(Yt, yt)
+                append!(Zt, zt)
+                append!(Xr, xr)
+                append!(Yr, yr)
+                append!(Zr, zr)
+                append!(R,  r)
+
+                xt, yt, zt, xr, yr, zr, r =
+                    compute_true_and_residuals(track_cathode, p0, v;
+                                            zcorr = track3D_cathode.z0_corr)
+
+                append!(Xt, xt)
+                append!(Yt, yt)
+                append!(Zt, zt)
+                append!(Xr, xr)
+                append!(Yr, yr)
+                append!(Zr, zr)
+                append!(R,  r)
+            end
+            push!(ID_track_anode_to_anode, track3D_cathode.ID)
+        end
+    end
+
+    return Xt, Yt, Zt, Xr, Yr, Zr, R, ID_track_anode_to_anode
+end
+
+function process_run_anode_to_anode(dir::String)
+    
+    #List all files in run directory
+    files = sort(filter(f -> endswith(f, ".h5"),
+                        readdir(dir, join=true)))
+
+    nfiles = length(files)
+    estimate_per_file = 35_000   # adjust if needed
+    total_estimate = estimate_per_file * nfiles
+
+    Xt_all = Vector{Float64}(undef, total_estimate)
+    Yt_all = Vector{Float64}(undef, total_estimate)
+    Zt_all = Vector{Float64}(undef, total_estimate)
+    Xr_all = Vector{Float64}(undef, total_estimate)
+    Yr_all = Vector{Float64}(undef, total_estimate)
+    Zr_all = Vector{Float64}(undef, total_estimate)
+    R_all  = Vector{Float64}(undef, total_estimate)
+
+    idx = 0
+    file_index = 0  # Track the file index
+
+    for file in files
+        file_index += 1  # Increment the file index
+        # Print every 10 files
+        if file_index % 10 == 1
+            println("Processing: $(basename(file)) (file $file_index of $(length(files)))")
+        end
+
+        Xt, Yt, Zt, Xr, Yr, Zr, R = compute_space_charge_anode_to_anode(file)
+
+        n = length(Xt)
+
+        Xt_all[idx+1:idx+n] = Xt
+        Yt_all[idx+1:idx+n] = Yt
+        Zt_all[idx+1:idx+n] = Zt
+        Xr_all[idx+1:idx+n] = Xr
+        Yr_all[idx+1:idx+n] = Yr
+        Zr_all[idx+1:idx+n] = Zr
+        R_all[idx+1:idx+n]  = R
+
+        idx += n
+    end
+
+    # Trim unused space
+    resize!(Xt_all, idx)
+    resize!(Yt_all, idx)
+    resize!(Zt_all, idx)
+    resize!(Xr_all, idx)
+    resize!(Yr_all, idx)
+    resize!(Zr_all, idx)
+    resize!(R_all,  idx)
+
+    return Xt_all, Yt_all, Zt_all, Xr_all, Yr_all, Zr_all, R_all
+end
+ 
