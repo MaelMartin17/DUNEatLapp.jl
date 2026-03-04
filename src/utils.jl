@@ -6,11 +6,21 @@ Convert charge values (in femtocoulombs, fC) to energy (in MeV) using the ArgoNE
 # Arguments
 - `q`: Vector of charge values in femtocoulombs (fC).
 - `E`: Electric field strength in volts per centimeter (V/cm).
-- \(q_e = 1.604 \times 10^{-4}\) fC (electron charge in fC),
-- \(\alpha = 0.93\) (recombination constant).
 
 # Returns
 - Vector of energy values in mega-electronvolts (MeV).
+
+# Details
+The conversion follows the recombination model:
+E = (exp(q * β * W / q_e) - α) / β
+where:
+- β = 0.212 / 1.3849 / E (recombination parameter),
+- W = 23.6e-6 MeV (work function for liquid argon),
+- q_e = 1.604e-4 fC (electron charge in fC),
+- α = 0.93 (recombination constant).
+
+# References
+- ArgoNEUT 2013, JINST 8 P08005: [https://doi.org/10.1088/1748-0221/8/08/P08005](https://doi.org/10.1088/1748-0221/8/08/P08005)
 """
 function fC_to_MeV(q::Vector{<:AbstractFloat}, E::Float64)
     betarhoe = 0.212 / 1.3849 / E
@@ -20,7 +30,6 @@ function fC_to_MeV(q::Vector{<:AbstractFloat}, E::Float64)
 
     return [(exp(x * betarhoe * W / qe) - alpha) / betarhoe for x in q]
 end
-
 
 """
     plot_detector_planes(z_height = 338.5; alpha = 0.4)
