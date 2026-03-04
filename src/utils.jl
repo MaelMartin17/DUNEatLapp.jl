@@ -1,4 +1,28 @@
 """
+    fC_to_MeV(q::Vector{<:AbstractFloat}, E::Float64)
+
+Convert charge values (in femtocoulombs, fC) to energy (in MeV) using the ArgoNEUT 2013 calibration method (JINST 8 P08005).
+
+# Arguments
+- `q`: Vector of charge values in femtocoulombs (fC).
+- `E`: Electric field strength in volts per centimeter (V/cm).
+- \(q_e = 1.604 \times 10^{-4}\) fC (electron charge in fC),
+- \(\alpha = 0.93\) (recombination constant).
+
+# Returns
+- Vector of energy values in mega-electronvolts (MeV).
+"""
+function fC_to_MeV(q::Vector{<:AbstractFloat}, E::Float64)
+    betarhoe = 0.212 / 1.3849 / E
+    qe = 1.604e-4
+    W = 23.6e-6
+    alpha = 0.93
+
+    return [(exp(x * betarhoe * W / qe) - alpha) / betarhoe for x in q]
+end
+
+
+"""
     plot_detector_planes(z_height = 338.5; alpha = 0.4)
 
 Plot the detector planes (top, bottom, and cathode) at the specified `z_height`.

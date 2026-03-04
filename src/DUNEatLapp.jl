@@ -63,6 +63,7 @@ export compute_true_and_residuals
 export compute_space_charge
 export process_run
 export make_residual_heatmap
+export fC_to_MeV
 
 include("utils.jl")
 include("functions.jl")
