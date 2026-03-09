@@ -5,7 +5,7 @@ Convert charge values (in femtocoulombs, fC) to energy (in MeV) using the ArgoNE
 
 # Arguments
 - `q`: Vector of charge values in femtocoulombs (fC).
-- `E`: Electric field strength in volts per centimeter (V/cm).
+- `E`: Electric field strength in volts per centimeter (kV/cm).
 
 # Returns
 - Vector of energy values in mega-electronvolts (MeV).
