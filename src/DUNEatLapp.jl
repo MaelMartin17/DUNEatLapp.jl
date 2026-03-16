@@ -67,6 +67,7 @@ export fC_to_MeV
 export fit_line_3d_anode_to_anode
 export compute_space_charge_anode_to_anode
 export process_run_anode_to_anode
+export reconstruct_low_e_hit
 
 include("utils.jl")
 include("functions.jl")
