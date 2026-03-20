@@ -61,6 +61,68 @@ function plot_detector_planes(z_height = 338.5; alpha = 0.4)
     return plt
 end
 
+"""
+    plot_detector_planes_CRPs(z_height = 340.64, alpha = 0.4)
+
+Plot the detector planes for the CRP (Cathode Readout Planes) system.
+
+# Arguments
+- `z_height::Float64`: The z-coordinate height of the top and bottom planes (default: 340.64 cm).
+- `alpha::Float64`: The transparency level of the planes (default: 0.4).
+
+# Returns
+- `plt`: A 3D plot object displaying the top, bottom, and cathode planes of the detector.
+
+# Details
+- The function generates a 3D visualization of the detector planes:
+  - Two top planes (left and right)
+  - Two bottom planes (left and right)
+  - A central cathode plane
+- The x and y ranges are defined to cover the detector area, and the planes are colored and styled for clarity.
+- The plot is returned without a legend or colorbar, with labeled axes.
+"""
+function plot_detector_planes_CRPs(z_height = 340.64, alpha = 0.4)
+    # Define x and y ranges for the detector planes
+    x_range_l = -340.5:20:-0.5   # Left x-range
+    x_range_r = 0.5:20:340.5     # Right x-range
+    x_range   = -340:50:340      # Full x-range for cathode
+    y_range   = 0.0:50:300.0      # y-range
+
+    # Generate meshgrid-like coordinates for each plane
+    x_l = [i for i in x_range_l, j in y_range]  # Left x-coordinates
+    x_r = [i for i in x_range_r, j in y_range]  # Right x-coordinates
+    x   = [i for i in x_range,   j in y_range]  # Full x-coordinates for cathode
+
+    y_l = [j for i in x_range_l, j in y_range]  # Left y-coordinates
+    y_r = [j for i in x_range_r, j in y_range]  # Right y-coordinates
+    y   = [j for i in x_range,   j in y_range]  # Full y-coordinates for cathode
+
+    # Create z-coordinate matrices for each plane
+    top_plane_l    = fill(z_height, length(x_range_l), length(y_range))    # Left top plane
+    top_plane_r    = fill(z_height, length(x_range_r), length(y_range))    # Right top plane
+    bottom_plane_l = fill(-z_height, length(x_range_l), length(y_range))  # Left bottom plane
+    bottom_plane_r = fill(-z_height, length(x_range_r), length(y_range))  # Right bottom plane
+    cathode        = fill(0.0, length(x_range), length(y_range))          # Cathode plane
+
+    # Initialize the plot with labels and styling
+    plt = plot(
+        legend = false,
+        colorbar = false,
+        xlabel = "y [cm]",
+        ylabel = "z [cm]",
+        zlabel = "x [cm]",
+        framestyle = :box
+    )
+
+    # Plot each plane with specified colors and transparency
+    surface!(plt, x_l, y_l, top_plane_l;    color = :orangered4, alpha = alpha, linecolor = :orange3)
+    surface!(plt, x_r, y_r, top_plane_r;    color = :orange,     alpha = alpha, linecolor = :orange)
+    surface!(plt, x_l, y_l, bottom_plane_l; color = :orangered4, alpha = alpha, linecolor = :orange3)
+    surface!(plt, x_r, y_r, bottom_plane_r; color = :orange,     alpha = alpha, linecolor = :orange)
+    surface!(plt, x,   y,   cathode;        color = :black,     alpha = alpha, linecolor = :black)
+
+    return plt
+end
 
 """
     fit_line_3d(x, y, z)
