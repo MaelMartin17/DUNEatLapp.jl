@@ -53,6 +53,7 @@ export Compute_Sun_initialVector
 export tracks3d_lardon
 export hits_in_tracks3d
 export plot_detector_planes
+export plot_detector_planes_CRPs
 export fit_line_3d
 export prepare_data_for_fit
 export project_point_to_line
