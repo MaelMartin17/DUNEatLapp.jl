@@ -32,7 +32,7 @@ function check_selection_vd(track, zcorr, nHits::Int=30)
     N = length(track)
     N ≥ nHits || return false
 
-    anode = 338.0
+    anode = 343.6
 
     zmin =  Inf
     zmax = -Inf
