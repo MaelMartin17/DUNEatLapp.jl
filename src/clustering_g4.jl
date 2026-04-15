@@ -43,7 +43,7 @@ function get_clusters_vertex_and_energy_of_evt_space_time(data_Ar::DataFrame, ra
     # If there are few data points, consider all as a single cluster
     if size(data_Ar, 1) <= 3
         total_energy = sum(data_Ar.E)
-        avg_coords = [mean(data_Ar.x), mean(data_Ar.y), mean(data_Ar.z)]
+        avg_coords = [mean(data_Ar.x), mean(data_Ar.y), mean(data_Ar.z), t_to_cm_at_500V_cm*mean(data_Ar.t)]
         push!(cluster_energies, total_energy)
         push!(cluster_centers, avg_coords)
     else
