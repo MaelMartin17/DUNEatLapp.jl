@@ -490,7 +490,7 @@ function Create_df_Main_Cluster_Discrimination_Emin(df_Ula::DataFrame, radius::F
         a_Cmax = clusters.clusters[argmax(data[:, 1])]    
         data_Cmax = data_Ar[a_Cmax.core_indices,:]
 
-        data = data[data[:,1].>100.,:]
+        data = data[data[:,1].> Emin,:]
         
         if isempty(data)
             continue
