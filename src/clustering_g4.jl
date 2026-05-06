@@ -472,7 +472,7 @@ function Create_df_Main_Cluster_Discrimination_Emin(df_Ula::DataFrame, radius::F
     nbr_evt_rejected = 0
     t_scale = 0.1601
 
-    for (evt_id, first, last) in ProgressBar(eachrow(Index_evts))
+    for (evt_id, first, last) in eachrow(Index_evts)
         data_Ar = df_Ula[first:last, :]
 
         if size(data_Ar, 1) <= 3 && sum(data_Ar[:, :E]) > Emin
