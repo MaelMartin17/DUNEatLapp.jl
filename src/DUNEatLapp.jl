@@ -71,6 +71,7 @@ export process_run_anode_to_anode
 export reconstruct_low_e_hit
 export random_point_in_sphere
 export poisson_mean
+export mix_signal_background
 
 include("utils.jl")
 include("functions.jl")

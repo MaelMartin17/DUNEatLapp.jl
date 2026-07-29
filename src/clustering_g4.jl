@@ -1,3 +1,82 @@
+raw"""
+    mix_signal_background(signal::DataFrame, ar39_library::Vector{DataFrame}; radius::Float64=50.0) -> DataFrame
+
+Overlays simulated Ar-39 radiological background decays onto a Geant4 signal event DataFrame.
+
+# Arguments
+- `signal::DataFrame`: DataFrame containing Monte Carlo signal hits (must contain columns `:x`, `:y`, `:z`, `:t`, `:evt`).
+- `ar39_library::Vector{DataFrame}`: Pre-generated library of individual $^{39}\text{Ar}$ decay topologies from Geant4.
+- `radius::Float64=50.0`: Radius of the spherical bounding region (in cm) around the signal vertex where background decays are injected.
+
+# Returns
+- `DataFrame`: Combined DataFrame containing both original signal hits and injected background hits.
+
+# Geant4 Timing Note
+- Pure Geant4 primary radioactive decays generate global timestamps based on $^{39}\text{Ar}$'s half-life (269 years).
+- To simulate an accidental pile-up within the same TPC drift window, all injected background hits have their timestamps aligned to the signal reference time `t0`.
+"""
+function mix_signal_background(
+    signal::DataFrame,
+    ar39_library::Vector{DataFrame};
+    radius::Float64=50.0
+)
+    isempty(signal) && return DataFrame()
+
+    # 1. Compute signal spatial barycenter and reference time (t0)
+    x0 = mean(signal.x)
+    y0 = mean(signal.y)
+    z0 = mean(signal.z)
+    t0 = mean(signal.t)
+
+    # 2. Compute Poisson mean λ of expected background decays in search volume
+    λ = poisson_mean(x0; r_m = radius / 100.0)
+
+    # 3. Sample number of accidental background decays
+    N = rand(Poisson(λ))
+    
+    if N == 0
+        return copy(signal)
+    end
+
+    # Pre-allocate container to avoid repeated allocations
+    frames_to_combine = Vector{DataFrame}(undef, N + 1)
+    frames_to_combine[1] = copy(signal)
+
+    evt_id = signal.evt[1]
+
+    # 4. Inject N Ar39 decay topologies
+    for i in 1:N
+        ar_sample = rand(ar39_library)
+        ar = copy(ar_sample)
+
+        # Sample uniform random spatial offset within the bounding sphere
+        dx, dy, dz = random_point_in_sphere(radius)
+
+        target_x = x0 + dx
+        target_y = y0 + dy
+        target_z = z0 + dz
+
+        # Reference anchor point of the Ar39 decay
+        x_ref = ar.x[1]
+        y_ref = ar.y[1]
+        z_ref = ar.z[1]
+
+        # Translate spatial coordinates relative to target vertex
+        ar.x = ar.x .+ (target_x - x_ref)
+        ar.y = ar.y .+ (target_y - y_ref)
+        ar.z = ar.z .+ (target_z - z_ref)
+
+        # Override Geant4 long-time decay tail -> align to main event drift time window
+        ar.t = fill(t0, nrow(ar))
+        ar.evt = fill(evt_id, nrow(ar))
+
+        frames_to_combine[i + 1] = ar
+    end
+
+    return vcat(frames_to_combine...)
+end
+
+
 """
 function get_clusters_energy_of_evt(data_Ar::DataFrame,radius::Float64)
 function to make the information of energy of each cluster of one event
