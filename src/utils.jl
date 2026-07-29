@@ -1,4 +1,33 @@
 """
+    random_point_in_sphere([rng], R::Real=1.0)
+
+Generate a uniformly distributed random 3D point inside a solid sphere of radius `R`.
+"""
+function random_point_in_sphere(rng::AbstractRNG, R::T) where {T<:Real}
+    # Scale uniformly in volume
+    u = rand(rng, T)
+    r = R * cbrt(u)
+
+    # Uniform point on unit sphere surface
+    cosθ = 2 * rand(rng, T) - one(T)
+    sinθ = sqrt(max(zero(T), one(T) - cosθ^2)) # max handles tiny floating-point rounding issues
+
+    ϕ = T(2π) * rand(rng, T)
+    sinϕ, cosϕ = sincos(ϕ)
+
+    x = r * sinθ * cosϕ
+    y = r * sinθ * sinϕ
+    z = r * cosθ
+
+    return (x, y, z)
+end
+
+# Convenience fallbacks
+random_point_in_sphere(R::Real=1.0) = random_point_in_sphere(Random.default_rng(), R)
+random_point_in_sphere(rng::AbstractRNG) = random_point_in_sphere(rng, 1.0)
+
+
+"""
     fC_to_MeV(q::Vector{<:AbstractFloat}, E::Float64)
 
 Convert charge values (in femtocoulombs, fC) to energy (in MeV) using the ArgoNEUT 2013 calibration method (JINST 8 P08005).
