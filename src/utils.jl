@@ -26,6 +26,38 @@ end
 random_point_in_sphere(R::Real=1.0) = random_point_in_sphere(Random.default_rng(), R)
 random_point_in_sphere(rng::AbstractRNG) = random_point_in_sphere(rng, 1.0)
 
+"""
+    poisson_mean(x_cm; activity_Bq_per_m3=1400.0, r_m=0.5, vd_cm_per_s=1.57e5, max_drift_cm=343.0)
+
+Calculate the expected mean number of Ar39 random coincidences (Poisson λ) 
+within a spherical volume of radius `r_m` (in meters) over the readout drift window.
+
+# Arguments
+- `x_cm`: Event position in the drift coordinate [cm].
+- `activity_Bq_per_m3`: Volumetric activity of Ar39 [Bq/m³] (~1400 Bq/m³ for natural LAr).
+- `r_m`: Search sphere radius [meters].
+- `vd_cm_per_s`: LAr drift velocity [cm/s] (1.57e5 cm/s = 1.57 mm/µs).
+- `max_drift_cm`: Total drift length from anode to cathode [cm] (e.g., 343 cm for DUNE).
+"""
+function poisson_mean(x_cm::Real;
+                      activity_Bq_per_m3::Real = 1400.0, # ~1 Bq/kg * 1400 kg/m³
+                      r_m::Real = 0.5,                  # Radius in meters
+                      vd_cm_per_s::Real = 1.57e5,       # 1.57 mm/µs
+                      max_drift_cm::Real = 343.0)
+
+    # 1. Calculate drift distance and time window (in seconds)
+    drift_distance_cm = max_drift_cm - abs(x_cm)
+    drift_time_s = drift_distance_cm / vd_cm_per_s
+
+    # 2. Volume in m³
+    volume_m3 = (4/3) * π * r_m^3
+
+    # 3. Expected count λ = Activity * Volume * Time
+    λ = activity_Bq_per_m3 * volume_m3 * drift_time_s
+
+    return max(0.0, λ) # Ensure non-negative
+end
+
 
 """
     fC_to_MeV(q::Vector{<:AbstractFloat}, E::Float64)
