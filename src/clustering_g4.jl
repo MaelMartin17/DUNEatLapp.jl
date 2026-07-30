@@ -1,5 +1,5 @@
 raw"""
-    mix_signal_background(signal::DataFrame, ar39_library::Vector{DataFrame}; radius::Float64=50.0) -> DataFrame
+    mix_signal_background(signal::AbstractDataFrame, ar39_library::Vector{DataFrame}; radius::Float64=50.0) -> DataFrame
 
 Overlays simulated Ar-39 radiological background decays onto a Geant4 signal event DataFrame.
 
@@ -16,7 +16,7 @@ Overlays simulated Ar-39 radiological background decays onto a Geant4 signal eve
 - To simulate an accidental pile-up within the same TPC drift window, all injected background hits have their timestamps aligned to the signal reference time `t0`.
 """
 function mix_signal_background(
-    signal::DataFrame,
+    signal::AbstractDataFrame,
     ar39_library::Vector{DataFrame};
     radius::Float64=50.0
 )
