@@ -78,11 +78,11 @@ end
 
 
 """
-function get_clusters_energy_of_evt(data_Ar::DataFrame,radius::Float64)
+function get_clusters_energy_of_evt(data_Ar::AbstractDataFrame,radius::Float64)
 function to make the information of energy of each cluster of one event
 It receives the dataframe from G4 of a single event and a radius in cm and returns the energy of each cluster
 """
-function get_clusters_energy_of_evt(data_Ar::DataFrame, radius::Float64)
+function get_clusters_energy_of_evt(data_Ar::AbstractDataFrame, radius::Float64)
     # Collect energy contributions for each cluster
     cluster_energies = Float64[]
 
@@ -109,12 +109,12 @@ end
 
 #_______________________________________________________________________________________________________________________
 """
-function get_clusters_vertex_and_energy_of_evt_space_time(data_Ar::DataFrame, radius::Float64)
+function get_clusters_vertex_and_energy_of_evt_space_time(data_Ar::AbstractDataFrame, radius::Float64)
 Similar to get_clusters_vertex_and_energy_of_evt but using the time coordinate to better differentiate hits
 that are produced by long time decays. 
 Time coordinate (in us) is converted to a fourth coordinate assuming a drift time of 0.1601 cm/us (expected value at 500 V/cm) 
 """
-function get_clusters_vertex_and_energy_of_evt_space_time(data_Ar::DataFrame, radius::Float64)
+function get_clusters_vertex_and_energy_of_evt_space_time(data_Ar::AbstractDataFrame, radius::Float64)
     # Collect energy and coordinate information for each cluster
     cluster_energies = AbstractFloat[]
     cluster_centers = Vector{<:AbstractFloat}[]  # To store the average coordinates (x, y, z) of each cluster
@@ -165,11 +165,11 @@ end
 #_______________________________________________________________________________________________________________________
 
 """
-function get_clusters_vertex_and_energy_of_evt(data_Ar::DataFrame, radius::Float64)
+function get_clusters_vertex_and_energy_of_evt(data_Ar::AbstractDataFrame, radius::Float64)
 Function to get the energy and average position of each cluster
 It receives the event data frame and the radius for the clsutering
 """
-function get_clusters_vertex_and_energy_of_evt(data_Ar::DataFrame, radius::Float64)
+function get_clusters_vertex_and_energy_of_evt(data_Ar::AbstractDataFrame, radius::Float64)
     # Collect energy and coordinate information for each cluster
     cluster_energies = AbstractFloat[]
     cluster_centers = Vector{<:AbstractFloat}[]  # To store the average coordinates (x, y, z) of each cluster
