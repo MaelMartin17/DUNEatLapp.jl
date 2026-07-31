@@ -1,5 +1,5 @@
 raw"""
-function mix_signal_background(signal::AbstractDataFrame, ar39_library::Vector{DataFrame}; radius_cm::Float64 = 50.0, drift_coordinate::Symbol = :x) -> DataFrame
+function mix_signal_background(signal::AbstractDataFrame, ar39_library::Vector{DataFrame}; radius_cm::Float64 = 50.0, drift_axis::Symbol = :x) -> DataFrame
 
 Overlays simulated Ar-39 radiological background decays onto a Geant4 signal event DataFrame.
 
@@ -7,7 +7,7 @@ Overlays simulated Ar-39 radiological background decays onto a Geant4 signal eve
 - `signal::DataFrame`: DataFrame containing Monte Carlo signal hits (must contain columns `:x`, `:y`, `:z`, `:t`, `:evt`).
 - `ar39_library::Vector{DataFrame}`: Pre-generated library of individual $^{39}\text{Ar}$ decay topologies from Geant4.
 - `radius::Float64=50.0`: Radius of the spherical bounding region (in cm) around the signal vertex where background decays are injected.
--  `drift_coordinate::Symbol = :x`: Drift coordinate
+-  `drift_axis::Symbol = :x`: Drift coordinate
 
 # Returns
 - `DataFrame`: Combined DataFrame containing both original signal hits and injected background hits.
@@ -20,14 +20,14 @@ function mix_signal_background(
     signal::AbstractDataFrame,
     ar39_library::Vector{DataFrame};
     radius_cm::Float64 = 50.0,
-    drift_coordinate::Symbol = :x
+    drift_axis::Symbol = :x
 )
 
     isempty(signal) && return copy(signal)
 
     # Validate drift coordinate
-    drift_coordinate ∈ (:x, :y, :z) ||
-        throw(ArgumentError("drift_coordinate must be :x, :y or :z"))
+    drift_axis ∈ (:x, :y, :z) ||
+        throw(ArgumentError("drift_axis must be :x, :y or :z"))
 
     # 1. Compute signal spatial barycenter and reference time (t0)
     x0 = mean(signal.x)
@@ -36,9 +36,9 @@ function mix_signal_background(
     t0 = mean(signal.t)
 
     # Drift coordinate used to estimate accidental Ar39 rate
-    drift_pos = if drift_coordinate === :x
+    drift_pos = if drift_axis === :x
         x0
-    elseif drift_coordinate === :y
+    elseif drift_axis === :y
         y0
     else
         z0
