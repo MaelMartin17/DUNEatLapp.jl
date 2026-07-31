@@ -1,5 +1,5 @@
 raw"""
-    mix_signal_background(signal::AbstractDataFrame, ar39_library::Vector{DataFrame}; radius::Float64=50.0) -> DataFrame
+function mix_signal_background(signal::AbstractDataFrame, ar39_library::Vector{DataFrame}; radius_cm::Float64 = 50.0, drift_coordinate::Symbol = :x) -> DataFrame
 
 Overlays simulated Ar-39 radiological background decays onto a Geant4 signal event DataFrame.
 
@@ -7,6 +7,7 @@ Overlays simulated Ar-39 radiological background decays onto a Geant4 signal eve
 - `signal::DataFrame`: DataFrame containing Monte Carlo signal hits (must contain columns `:x`, `:y`, `:z`, `:t`, `:evt`).
 - `ar39_library::Vector{DataFrame}`: Pre-generated library of individual $^{39}\text{Ar}$ decay topologies from Geant4.
 - `radius::Float64=50.0`: Radius of the spherical bounding region (in cm) around the signal vertex where background decays are injected.
+-  `drift_coordinate::Symbol = :x`: Drift coordinate
 
 # Returns
 - `DataFrame`: Combined DataFrame containing both original signal hits and injected background hits.
@@ -18,9 +19,15 @@ Overlays simulated Ar-39 radiological background decays onto a Geant4 signal eve
 function mix_signal_background(
     signal::AbstractDataFrame,
     ar39_library::Vector{DataFrame};
-    radius::Float64=50.0
+    radius_cm::Float64 = 50.0,
+    drift_coordinate::Symbol = :x
 )
-    isempty(signal) && return DataFrame()
+
+    isempty(signal) && return copy(signal)
+
+    # Validate drift coordinate
+    drift_coordinate ∈ (:x, :y, :z) ||
+        throw(ArgumentError("drift_coordinate must be :x, :y or :z"))
 
     # 1. Compute signal spatial barycenter and reference time (t0)
     x0 = mean(signal.x)
@@ -28,17 +35,24 @@ function mix_signal_background(
     z0 = mean(signal.z)
     t0 = mean(signal.t)
 
-    # 2. Compute Poisson mean λ of expected background decays in search volume
-    λ = poisson_mean(x0; r_m = radius / 100.0)
+    # Drift coordinate used to estimate accidental Ar39 rate
+    drift_pos = if drift_coordinate === :x
+        x0
+    elseif drift_coordinate === :y
+        y0
+    else
+        z0
+    end
+
+    # 2. Compute expected number of accidental Ar39 decays
+    λ = poisson_mean(drift_pos; r_m = radius_cm / 100.0)
 
     # 3. Sample number of accidental background decays
     N = rand(Poisson(λ))
-    
-    if N == 0
-        return copy(signal)
-    end
 
-    # Pre-allocate container to avoid repeated allocations
+    N == 0 && return copy(signal)
+
+    # Preallocate output DataFrames
     frames_to_combine = Vector{DataFrame}(undef, N + 1)
     frames_to_combine[1] = copy(signal)
 
@@ -46,29 +60,30 @@ function mix_signal_background(
 
     # 4. Inject N Ar39 decay topologies
     for i in 1:N
-        ar_sample = rand(ar39_library)
-        ar = copy(ar_sample)
 
-        # Sample uniform random spatial offset within the bounding sphere
-        dx, dy, dz = random_point_in_sphere(radius)
+        # Copy one Ar39 event from the library
+        ar = copy(rand(ar39_library))
+
+        # Random interaction point inside the search sphere
+        dx, dy, dz = random_point_in_sphere(radius_cm)
 
         target_x = x0 + dx
         target_y = y0 + dy
         target_z = z0 + dz
 
-        # Reference anchor point of the Ar39 decay
-        x_ref = ar.x[1]
-        y_ref = ar.y[1]
-        z_ref = ar.z[1]
+        # Compute translation
+        Δx = target_x - ar.x[1]
+        Δy = target_y - ar.y[1]
+        Δz = target_z - ar.z[1]
 
-        # Translate spatial coordinates relative to target vertex
-        ar.x = ar.x .+ (target_x - x_ref)
-        ar.y = ar.y .+ (target_y - y_ref)
-        ar.z = ar.z .+ (target_z - z_ref)
+        # Translate hits (in-place)
+        ar.x .+= Δx
+        ar.y .+= Δy
+        ar.z .+= Δz
 
-        # Override Geant4 long-time decay tail -> align to main event drift time window
-        ar.t = fill(t0, nrow(ar))
-        ar.evt = fill(evt_id, nrow(ar))
+        # Align in time and assign event ID (in-place)
+        ar.t .= t0
+        ar.evt .= evt_id
 
         frames_to_combine[i + 1] = ar
     end
