@@ -72,13 +72,17 @@ export reconstruct_low_e_hit
 export random_point_in_sphere
 export poisson_mean
 export mix_signal_background
+export PDSFlash
+export find_pds_flashes_lowE
 
 include("utils.jl")
+include("types.jl")
 include("functions.jl")
 include("clustering_g4.jl")
 include("G4_connector.jl")
 include("neutron_capture_info.jl")
 include("analyse_lardon.jl")
 include("protoDUNE.jl")
+include("PDS.jl")
 
 end
