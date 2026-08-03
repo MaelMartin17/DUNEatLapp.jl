@@ -40,19 +40,19 @@ Cluster low-energy PDS (Photon Detection System) hits into reconstructed optical
 # Returns
 - A `Vector{PDSFlash}` containing the reconstructed clusters.
 """
-function find_pds_flashes_lowE(hits; dtick::Int=1, dpeak::Float64=10.0)
+function find_pds_flashes_lowE(hits; dtick::Int=1, dpeak::Float64=10.0, tmin::Real=0, tmax::Real=1700, qMax::Real = 2200, pDuration::Real=350)
     # -------------------------------------------------------------------------
     # 1. Filter Hits
     # -------------------------------------------------------------------------
     # Collect indices of hits that satisfy physical low-energy quality cuts
     valid_idx = filter(i -> begin
         h = hits[i]
-        h.timestamp > 0 &&
-        h.timestamp < 1700 &&    
-        h.glob_ch < 16 &&
-        (h.stop - h.start) <= 350 &&
+        h.timestamp > tmin &&
+        h.timestamp < tmax &&    
+        h.glob_ch < 16 && #Only look at cathode channels
+        (h.stop - h.start) <= pDuration &&
         (h.stop - h.max_t) <= 300 &&
-        h.npe < 2200 &&
+        h.npe < qMax &&
         !h.saturates
     end, eachindex(hits))
 
