@@ -76,6 +76,8 @@ export PDSFlash
 export find_pds_flashes_lowE
 export has_only_full_modules
 export has_full_module
+export cluster_hits_twotier
+export select_fiducial
 
 include("utils.jl")
 include("types.jl")

@@ -1,4 +1,168 @@
 """
+    cluster_hits_twotier(hits; 
+                        allowed_modules = Set([0, 1]), 
+                        core_radius::Real = 15.0, 
+                        halo_radius::Real = 50.0, 
+                        e_min = 0.05, 
+                        d_track::Real = 85.0, 
+                        tmin::Real = 0)
+
+Perform two-tier spatial clustering of low-energy hits within identical event/trigger windows.
+
+# Algorithm Overview
+1. **Pre-filtering:** Filters input hits by timestamp, minimum track distance, maximum barycenter distance, and allowed module IDs.
+2. **Grouping:** Groups passing hits by `event` and `trigger` IDs.
+3. **Core Clustering (Step A):** Sorts hits by reconstructed energy (highest first) to initiate clusters at local maxima. Builds a tight "core" around seed hits within `core_radius` to prevent artificial spatial chaining.
+4. **Halo Collection (Step B):** Calculates energy-weighted centroid of the core, then collects surrounding unassigned hits within `halo_radius` measured directly **from the core centroid**.
+5. **Leftovers:** Unclustered hits above `e_min` that were not assigned are added as single-hit clusters.
+
+# Arguments
+- `hits`: Collection of hit objects with fields (`timestamp`, `d_track_3D`, `d_bary_max`, `module`, `event`, `trigger`, `x`, `y`, `z`, `charge_pos`).
+
+# Keyword Arguments
+- `allowed_modules`: Collection or `Set` of allowed module IDs (default: `Set([0, 1])`).
+- `core_radius::Real`: Maximum distance for tight core cluster formation (default: `15.0`).
+- `halo_radius::Real`: Maximum distance from core centroid for collecting halo hits (default: `50.0`).
+- `e_min`: Minimum hit energy threshold for clustering (default: `0.05`).
+- `d_track::Real`: Minimum 3D distance to track cut (default: `85.0`).
+- `tmin::Real`: Minimum timestamp cut (default: `0`).
+
+# Returns
+- A `NamedTuple` containing vectors grouped per event/trigger window:
+  - `charges`: Reconstructed total energy/charge per cluster.
+  - `bx`, `by`, `bz`: Energy-weighted spatial centroids ($x, y, z$).
+  - `nhits`: Number of hits in each cluster.
+  - `t_hits`: Energy-weighted average timestamp of each cluster.
+"""
+function cluster_hits_twotier(hits; 
+                              allowed_modules = Set([0, 1]), 
+                              core_radius::Real=15.0, 
+                              halo_radius::Real=50.0, 
+                              e_min=0.05, 
+                              d_track::Real=85.0, 
+                              tmin::Real=0)
+    
+    # Ensure allowed_modules is a Set for fast lookup without mutating global state
+    modules_set = Set(allowed_modules)
+
+    # 1. Pre-filter hits based on physical quality cuts
+    f_hits = [h for h in hits if h.timestamp > tmin && 
+              h.d_track_3D > d_track && h.d_bary_max < 2.5 && h.module in modules_set]
+    
+    N = length(f_hits)
+    if N == 0
+        return (charges=Vector{Float64}[], bx=Vector{Float64}[], by=Vector{Float64}[], 
+                bz=Vector{Float64}[], nhits=Vector{Int}[], t_hits=Vector{Float64}[])
+    end
+
+    # 2. Group hits by Event and Trigger IDs
+    idx = sortperm(1:N, by=i -> (f_hits[i].event, f_hits[i].trigger))
+    boundaries = [1]
+    for i in 2:N
+        if f_hits[idx[i]].event != f_hits[idx[i-1]].event || f_hits[idx[i]].trigger != f_hits[idx[i-1]].trigger
+            push!(boundaries, i)
+        end
+    end
+    push!(boundaries, N + 1)
+
+    # Distance helper
+    dist(h1, h2) = sqrt((h1.x - h2.x)^2 + (h1.y - h2.y)^2 + (h1.z - h2.z)^2)
+
+    # Prepare output tuple buffers
+    results = (charges=Vector{Vector{Float64}}(), bx=Vector{Vector{Float64}}(),
+               by=Vector{Vector{Float64}}(), bz=Vector{Vector{Float64}}(),
+               nhits=Vector{Vector{Int}}(), t_hits=Vector{Vector{Float64}}())
+
+    # 3. Process each event/trigger window independently
+    for b in 1:length(boundaries)-1
+        start_i, stop_i = boundaries[b], boundaries[b+1]-1
+        window = idx[start_i:stop_i]
+        n_points = length(window)
+
+        energies = [reconstruct_low_e_hit(f_hits[i].charge_pos[3]) for i in window]
+        assigned = falses(n_points)
+
+        b_q, b_x, b_y, b_z, b_n, b_t = Float64[], Float64[], Float64[], Float64[], Int[], Float64[]
+
+        # Sort remaining hits highest energy first to start clusters at local maxima
+        order = sortperm(energies, rev=true)
+
+        for i_sorted in order
+            if assigned[i_sorted] || energies[i_sorted] < e_min
+                continue
+            end
+
+            # Start a new cluster core
+            cluster = Int[i_sorted]
+            assigned[i_sorted] = true
+
+            # Step A: Build tight core (prevents artificial spatial chaining)
+            for j in 1:n_points
+                if !assigned[j] && energies[j] >= e_min
+                    d = dist(f_hits[window[i_sorted]], f_hits[window[j]])
+                    if d <= core_radius
+                        push!(cluster, j)
+                        assigned[j] = true
+                    end
+                end
+            end
+
+            # Calculate current energy-weighted centroid of the core
+            sq = sum(energies[ci] for ci in cluster)
+            cx = sum(f_hits[window[ci]].x * energies[ci] for ci in cluster) / sq
+            cy = sum(f_hits[window[ci]].y * energies[ci] for ci in cluster) / sq
+            cz = sum(f_hits[window[ci]].z * energies[ci] for ci in cluster) / sq
+
+            # Step B: Collect loose halo hits within halo_radius OF THE CORE CENTROID
+            for j in 1:n_points
+                if !assigned[j] && energies[j] >= e_min
+                    h = f_hits[window[j]]
+                    d_centroid = sqrt((h.x - cx)^2 + (h.y - cy)^2 + (h.z - cz)^2)
+                    
+                    if d_centroid <= halo_radius
+                        push!(cluster, j)
+                        assigned[j] = true
+                    end
+                end
+            end
+
+            # Reconstruct final cluster properties
+            final_sq = sum(energies[ci] for ci in cluster)
+            final_sx = sum(f_hits[window[ci]].x * energies[ci] for ci in cluster)
+            final_sy = sum(f_hits[window[ci]].y * energies[ci] for ci in cluster)
+            final_sz = sum(f_hits[window[ci]].z * energies[ci] for ci in cluster)
+            final_st = sum(f_hits[window[ci]].timestamp * energies[ci] for ci in cluster)
+
+            invq = 1.0 / final_sq
+            push!(b_q, final_sq)
+            push!(b_x, final_sx * invq)
+            push!(b_y, final_sy * invq)
+            push!(b_z, final_sz * invq)
+            push!(b_n, length(cluster))
+            push!(b_t, final_st * invq)
+        end
+
+        # Handle leftover isolated hits
+        for i in 1:n_points
+            if !assigned[i]
+                h = f_hits[window[i]]
+                push!(b_q, energies[i])
+                push!(b_x, h.x); push!(b_y, h.y); push!(b_z, h.z)
+                push!(b_n, 1); push!(b_t, h.timestamp)
+            end
+        end
+
+        push!(results.charges, b_q); push!(results.bx, b_x)
+        push!(results.by, b_y); push!(results.bz, b_z)
+        push!(results.nhits, b_n); push!(results.t_hits, b_t)
+    end
+
+    return results
+end
+
+
+
+"""
     check_selection_vd(track, zcorr, nHits::Int=30) -> Bool
 
 Check if a track meets specific selection criteria based on its proximity to anodes in the drift axis.

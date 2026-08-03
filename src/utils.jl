@@ -313,3 +313,59 @@ function reconstruct_low_e_hit(Q_fC)
     return Energy_MeV
 end
 
+"""
+    select_fiducial(results; kwargs...)
+
+Apply spatial, temporal, and hit-multiplicity fiducial volume cuts to reconstructed clustering results.
+
+# Arguments
+- `results`: A `NamedTuple` or `DataFrame` containing reconstructed cluster properties 
+  (expects fields `bx`, `by`, `bz`, `charges`, `nhits`, `file_id`, and `times` or `t_hits`).
+
+# Keyword Arguments
+- `xlow::Float64`: Lower bound for X position (default: `-250.0`).
+- `xhigh::Float64`: Upper bound for X position (default: `300.0`).
+- `ylow::Float64`: Lower bound for Y position (default: `25.0`).
+- `yhigh::Float64`: Upper bound for Y position (default: `275.0`).
+- `tmin::Float64`: Minimum cluster timestamp (default: `5.0`).
+- `tmax::Float64`: Maximum cluster timestamp (default: `2500.0`).
+- `nMinHits::Int`: Minimum number of hits in cluster, inclusive (default: `1`).
+- `nMaxHits::Int`: Maximum number of hits in cluster, inclusive (default: `10`).
+
+# Returns
+- A `NamedTuple` containing the filtered sub-vectors for all cluster variables.
+"""
+function select_fiducial(results;
+    xlow::Float64 = -250.0,
+    xhigh::Float64 = 300.0,
+    ylow::Float64 = 25.0,
+    yhigh::Float64 = 275.0,
+    tmin::Float64 = 5.0,
+    tmax::Float64 = 2500.0,
+    nMinHits::Int = 1,
+    nMaxHits::Int = 10
+)
+    # Handle field naming flexibility (t_hits from clustering vs times)
+    times_vec = hasproperty(results, :times) ? results.times : results.t_hits
+
+    # Compute boolean selection mask across all fiducial parameters
+    mask = (results.bx .>= xlow) .&&
+           (results.bx .<= xhigh) .&&
+           (results.by .>= ylow) .&&
+           (results.by .<= yhigh) .&&
+           (times_vec .>= tmin) .&&
+           (times_vec .<= tmax) .&&
+           (results.nhits .>= nMinHits) .&&
+           (results.nhits .<= nMaxHits)
+
+    # Return filtered sub-arrays in a new NamedTuple
+    return (
+        charges = results.charges[mask],
+        nhits   = results.nhits[mask],
+        times   = times_vec[mask],
+        bx      = results.bx[mask],
+        by      = results.by[mask],
+        bz      = results.bz[mask],
+        file_id = hasproperty(results, :file_id) ? results.file_id[mask] : Int[]
+    )
+end
