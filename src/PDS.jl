@@ -1,22 +1,20 @@
 """
-    has_only_full_modules(channels, module_pairs) -> Bool
-
-Check whether all required module channel pairs are completely present in `channels`.
-
-# Arguments
-- `channels`: An iterable collection of channel IDs (e.g., Vector, Set, Tuple).
-- `module_pairs`: A collection of 2-element tuples `(a, b)` representing paired channels.
-
-# Returns
-- `Bool`: `true` if every pair `(a, b)` in `module_pairs` has both elements 
-  present in `channels`, otherwise `false`.
+Checks that every channel in `channels` belongs to a complete pair present in `channels`.
+Rejects events with "orphaned" channels from incomplete modules.
 """
 function has_only_full_modules(channels, module_pairs)
-    # Convert channels to a Set for O(1) constant-time existence checks
     ch = Set(Int.(channels))
     
-    # Ensure EVERY module pair (a, b) has both 'a' and 'b' active in 'ch'
-    return all((a in ch) && (b in ch) for (a, b) in module_pairs)
+    # 1. Build a lookup mapping each channel to its paired partner
+    # e.g., if (2,3) is a pair, partner_map[2] = 3 and partner_map[3] = 2
+    partner_map = Dict{Int, Int}()
+    for (a, b) in module_pairs
+        partner_map[Int(a)] = Int(b)
+        partner_map[Int(b)] = Int(a)
+    end
+    
+    # 2. Check that for EVERY active channel, its partner is also in 'ch'
+    return all(get(partner_map, c, -1) in ch for c in ch)
 end
 
 
