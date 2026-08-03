@@ -74,6 +74,8 @@ export poisson_mean
 export mix_signal_background
 export PDSFlash
 export find_pds_flashes_lowE
+export has_only_full_modules
+export has_full_module
 
 include("utils.jl")
 include("types.jl")

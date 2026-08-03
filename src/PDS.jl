@@ -1,4 +1,26 @@
 """
+    has_only_full_modules(channels, module_pairs) -> Bool
+
+Check whether all required module channel pairs are completely present in `channels`.
+
+# Arguments
+- `channels`: An iterable collection of channel IDs (e.g., Vector, Set, Tuple).
+- `module_pairs`: A collection of 2-element tuples `(a, b)` representing paired channels.
+
+# Returns
+- `Bool`: `true` if every pair `(a, b)` in `module_pairs` has both elements 
+  present in `channels`, otherwise `false`.
+"""
+function has_only_full_modules(channels, module_pairs)
+    # Convert channels to a Set for O(1) constant-time existence checks
+    ch = Set(Int.(channels))
+    
+    # Ensure EVERY module pair (a, b) has both 'a' and 'b' active in 'ch'
+    return all((a in ch) && (b in ch) for (a, b) in module_pairs)
+end
+
+
+"""
     has_full_module(channels, module_pairs)
 
 Check whether both channels of at least one module (pair) are present in `channels`.
