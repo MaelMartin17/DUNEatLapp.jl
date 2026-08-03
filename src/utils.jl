@@ -313,7 +313,7 @@ function reconstruct_low_e_hit(Q_fC)
     return Energy_MeV
 end
 
-"""
+raw"""
     select_fiducial(results; kwargs...)
 
 Apply spatial, temporal, and hit-multiplicity fiducial volume cuts to reconstructed clustering results.

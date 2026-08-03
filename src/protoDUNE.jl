@@ -1,4 +1,4 @@
-"""
+raw"""
     cluster_hits_twotier(hits; 
                         allowed_modules = Set([0, 1]), 
                         core_radius::Real = 15.0, 
