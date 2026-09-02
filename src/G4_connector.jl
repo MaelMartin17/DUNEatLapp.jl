@@ -1,9 +1,9 @@
 """
-function get_evts_index(df::DataFrame)
+function get_evts_index(df::AbstractDataFrame)
 Function to get the index of start and end of each event in a ulalap.csv file
 It accepts a dataframe and returns a matrix with column corresponding to the: number_of_event  index_start_evt  index_ends_evt
 """
-function get_evts_index(df::DataFrame)
+function get_evts_index(df::AbstractDataFrame)
     #Initialize variables
     event_number = df[1,:evt]
     evts_info = Vector{Vector{Int}}()
@@ -61,12 +61,12 @@ end
 
 
 """
-function get_hits_in_active_LAr_TPC(df_evt_all_hits::DataFrame,fidu::Float64 = 0.)
+function get_hits_in_active_LAr_TPC(df_evt_all_hits::AbstractDataFrame,fidu::Float64 = 0.)
 Function to filter the hits of a given event and select only hits in active region of the active volume
 It uses the fact that the CRPs/cathode represents a surface of 6000x1300 cm2
 For fiducialization purposes a given fiducialization can also be used (in cm)
 """
-function get_hits_in_active_LAr_TPC(df_evt_all_hits::DataFrame, fidu::Float64 = 0.0)
+function get_hits_in_active_LAr_TPC(df_evt_all_hits::AbstractDataFrame, fidu::Float64 = 0.0)
     active_LAr_x = 3000.0
     active_LAr_y = 672.0
     active_LAr_z = 680.0
@@ -86,7 +86,7 @@ end
 function get_hits_in_inactive_LAr(df_evt_all_hits::DataFrame)
 Function to the hits in the inactive LAr between the field cage and the primary membrane of the cryostat
 """
-function get_hits_in_inactive_LAr(df_evt_all_hits::DataFrame)
+function get_hits_in_inactive_LAr(df_evt_all_hits::AbstractDataFrame)
     active_LAr_x = 3000.0
     active_LAr_y = 672.0
     active_LAr_z = 680.0
@@ -98,12 +98,12 @@ function get_hits_in_inactive_LAr(df_evt_all_hits::DataFrame)
 end
 
 """
-function get_hits_in_active_LAr_TPC_Lateral_fidu(df_evt_all_hits::DataFrame,fidu_x::Float64, fidu_z::Float64)
+function get_hits_in_active_LAr_TPC_Lateral_fidu(df_evt_all_hits::AbstractDataFrame,fidu_x::Float64, fidu_z::Float64)
 Function to filter the hits of a given event and select only hits in active region of the active volume
 It uses the fact that the CRPs/cathode represents a surface of 6000x1300 cm2
 For fiducialization purposes a given fiducialization can also be used (in cm)
 """
-function get_hits_in_active_LAr_TPC_Lateral_fidu(df_evt_all_hits::DataFrame, fidu_x::Float64, fidu_z::Float64)
+function get_hits_in_active_LAr_TPC_Lateral_fidu(df_evt_all_hits::AbstractDataFrame, fidu_x::Float64, fidu_z::Float64)
     active_LAr_x = 3000.0
     active_LAr_y = 672.0
     active_LAr_z = 680.0
