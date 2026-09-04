@@ -1054,4 +1054,207 @@ function process_run_anode_to_anode(dir::String)
 
     return Xt_all, Yt_all, Zt_all, Xr_all, Yr_all, Zr_all, R_all
 end
+
+
+"""
+    check_selection_cathode(track, zcorr, nHits::Int=30) -> Bool
+
+Check if a track meets specific selection criteria based on its proximity to cathode in the drift axis.
+
+# Arguments
+- `track`: A collection of track points, where each point is expected to have at least 3 elements,
+           and the third element represents the z-coordinate.
+- `zcorr`: A correction value to be applied to the z-coordinate of each track point.
+- `nHits::Int=30`: The minimum number of hits required for the track to be considered valid.
+                   Defaults to 30.
+
+# Returns
+- `Bool`: `true` if the track meets the selection criteria, otherwise `false`.
+
+# Details
+The function checks the following conditions:
+1. The track must have at least `nHits` points.
+2. The track must reach near the cathode (-20 < z-coordinate < 20).
+"""
+function check_selection_cathode(track, zcorr, nHits::Int=30)
+
+    cathode = 0.
+
+    zmin =  Inf
+    zmax = -Inf
+    # Find max and min in drift axis reach near one of the anodes
+    @inbounds for row in track
+        zc = row[3] + zcorr
+        zc < zmin && (zmin = zc)
+        zc > zmax && (zmax = zc)
+    end
+    # Must reach near one of the anodes
+    min(abs(zmin), abs(zmax)) < 20 || return false
+
+    return true
+end
+
+"""
+    compute_true_and_residuals_at_one_point(coords, p0, v) -> Tuple{Float64, Float64, Float64, Float64, Float64, Float64, Float64}
+
+Compute the true (projected) position and residual from a track relative to a reference line defined by a point and a direction vector.
+
+# Arguments
+- `coords`: 3D track point (x, y, z).
+- `p0`: A reference point (x₀, y₀, z₀) on the line.
+- `v`: A direction vector of the line.
+
+# Returns
+- A tuple containing:
+  - `xt`: Float64 true x-coordinates (projected onto the line).
+  - `yt`: Float64 true y-coordinates (projected onto the line).
+  - `zt`: Float64 true z-coordinates (projected onto the line).
+  - `rx`: Float64 residuals in the x-direction.
+  - `ry`: Float64 residuals in the y-direction.
+  - `rz`: Float64 residuals in the z-direction.
+  - `r`: Float64 residual displacements (Euclidean norm).
+
+# Details
+
+1. Computes the projection of the point onto the line defined by `p0` and `v`.
+2. Calculates the residual vector as the difference between the measured position and the projected position.
+3. Computes the Euclidean norm of the residual vector.
+"""
+function compute_true_and_residuals_at_one_point(coords, p0, v)
+
+    invnorm2 = 1.0 / dot(v,v)
+
+    # Measured position
+    x = coords[1]
+    y = coords[2]
+    z = coords[3]
+
+    # Relative to reference point
+    dx = x - p0[1]
+    dy = y - p0[2]
+    dz = z - p0[3]
+
+    # Projection parameter
+    t = (dx*v[1] + dy*v[2] + dz*v[3]) * invnorm2
+
+    # True position (projection)
+    xt = p0[1] + t*v[1]
+    yt = p0[2] + t*v[2]
+    zt = p0[3] + t*v[3]
+
+    rx = x - xt
+    ry = y - yt
+    rz = z - zt
+
+    return xt, yt, zt, rx, ry, rz
+end
+
+"""
+    make_residual_heatmap_for_horizontal_plan(
+    selected_volume::String,
+    x::AbstractVector,
+    y::AbstractVector,
+    dx::AbstractVector,
+    dy::AbstractVector,
+    dz::AbstractVector,
+    vol::AbstractVector;
+    y_edges,
+    x_edges,
+    min_counts = 2,) 
+    -> Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}
+
+Compute the average residuals at each point of a xy map 
+
+# Arguments
+- `selected_volume`: The selected volume of the detected (Top or Bottom).
+- `x`: Vector of Float64 true x-coordinates (projected onto the line)
+- `y`: Vector of Float64 true y-coordinates (projected onto the line)
+- `dx`: Vector of Float64 residuals in the x-direction.
+- `dy`: Vector of Float64 residuals in the y-direction.
+- 'vol': Vector of Int/Bool of the volume of the point
+- 'y_edges': Steplenrange of the y axis
+- 'x_edges': Steplenrange of the x axis
+- 'min_counts': minimum number of counts to compute the average
+
+# Returns
+- 'avg_dx': Average residuals in the x direction
+- 'avg_dy': Average residuals in the y direction
+- 'avg_dz': Average residuals in the z direction
+- 'counts': Number of hits inside a point of the map
+"""
+function make_residual_heatmap_for_horizontal_plan(
+    selected_volume::String,
+    x::AbstractVector,
+    y::AbstractVector,
+    dx::AbstractVector,
+    dy::AbstractVector,
+    dz::AbstractVector,
+    vol::AbstractVector;
+    y_edges,
+    x_edges,
+    min_counts = 2,
+)
+
+    N = length(x)
+
+    nbins_x = length(x_edges) - 1
+    nbins_y = length(y_edges) - 1
+
+    # --- Initialize accumulators ---
+    sum_dx = zeros(nbins_x, nbins_y)
+    sum_dy = zeros(nbins_x, nbins_y)
+    sum_dz = zeros(nbins_x, nbins_y)
+    counts = zeros(Int, nbins_x, nbins_y)
+
+    # ==========================================================
+    #                   Single-pass binning
+    # ==========================================================
+
+    @inbounds for i in 1:N
+
+        # Skip invalid residuals
+        if !isfinite(dz[i])
+            continue
+        end
+        
+        if selected_volume == "top" 
+            vol[i] == 1 || continue
+        else selected_volume == "bottom" 
+            vol[i] == -1 || continue
+        end
+
+        xi = x[i]
+        yi = y[i]
+
+        ix = searchsortedlast(x_edges, xi)
+        iy = searchsortedlast(y_edges, yi)
+
+        if 1 ≤ ix ≤ nbins_x && 1 ≤ iy ≤ nbins_y
+            sum_dx[ix, iy] += dx[i]
+            sum_dy[ix, iy] += dy[i]
+            sum_dz[ix, iy] += dz[i]
+            counts[ix, iy] += 1
+        end
+    end
+
+    # ==========================================================
+    #                   Compute averages
+    # ==========================================================
+
+    avg_dx = fill(NaN, nbins_x, nbins_y)
+    avg_dy = fill(NaN, nbins_x, nbins_y)
+    avg_dz = fill(NaN, nbins_x, nbins_y)
+
+    @inbounds for ix in 1:nbins_x, iy in 1:nbins_y
+        c = counts[ix, iy]
+        if c ≥ min_counts
+            inv = 1.0 / c
+            avg_dx[ix, iy] = sum_dx[ix, iy] * inv
+            avg_dy[ix, iy] = sum_dy[ix, iy] * inv
+            avg_dz[ix, iy] = sum_dz[ix, iy] * inv
+        end
+    end
+
+    return avg_dx, avg_dy, avg_dz, counts
+end
  

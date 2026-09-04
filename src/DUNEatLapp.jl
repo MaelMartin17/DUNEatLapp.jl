@@ -78,6 +78,9 @@ export has_only_full_modules
 export has_full_module
 export cluster_hits_twotier
 export select_fiducial
+export check_selection_cathode
+export compute_true_and_residuals_at_one_point
+export make_residual_heatmap_for_horizontal_plan
 
 include("utils.jl")
 include("types.jl")
