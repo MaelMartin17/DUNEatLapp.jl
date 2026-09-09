@@ -1171,6 +1171,7 @@ Compute the average residuals at each point of a xy map
 - `y`: Vector of Float64 true y-coordinates (projected onto the line)
 - `dx`: Vector of Float64 residuals in the x-direction.
 - `dy`: Vector of Float64 residuals in the y-direction.
+- `dz`: Vector of Float64 residuals in the z-direction.
 - 'vol': Vector of Int/Bool of the volume of the point
 - 'y_edges': Steplenrange of the y axis
 - 'x_edges': Steplenrange of the x axis
@@ -1219,7 +1220,7 @@ function make_residual_heatmap_for_horizontal_plan(
         
         if selected_volume == "top" 
             vol[i] == 1 || continue
-        else selected_volume == "bottom" 
+        elseif selected_volume == "bottom" 
             vol[i] == -1 || continue
         end
 
