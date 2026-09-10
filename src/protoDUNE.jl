@@ -1161,12 +1161,12 @@ end
     y_edges,
     x_edges,
     min_counts = 2,) 
-    -> Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Float64}
+    -> Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Int64}
 
 Compute the average residuals at each point of a xy map 
 
 # Arguments
-- `selected_volume`: The selected volume of the detected (Top or Bottom).
+- `selected_volume`: The selected volume of the detector (Top or Bottom).
 - `x`: Vector of Float64 true x-coordinates (projected onto the line)
 - `y`: Vector of Float64 true y-coordinates (projected onto the line)
 - `dx`: Vector of Float64 residuals in the x-direction.
@@ -1258,4 +1258,141 @@ function make_residual_heatmap_for_horizontal_plan(
 
     return avg_dx, avg_dy, avg_dz, counts
 end
+
+"""
+    make_residual_heatmap_at_edge(
+    selected_surface::String,
+    x::AbstractVector,
+    y::AbstractVector,
+    z::AbstractVector,
+    dx::AbstractVector,
+    dy::AbstractVector,
+    dz::AbstractVector,
+    surface::AbstractVector;
+    y_edges,
+    z_edges,
+    x_edges,
+    min_counts = 2,) 
+    -> Matrix{Float64}, Matrix{Float64}, Matrix{Float64}, Matrix{Int64}
+
+Compute the average residuals at each point of a surface of the detector 
+
+# Arguments
+- `selected_surface`: The selected surface of the detector (neg_y, pos_y, neg_x or pos_x).
+- `x`: Vector of Float64 true x-coordinates (projected onto the line)
+- `y`: Vector of Float64 true y-coordinates (projected onto the line)
+- `z`: Vector of Float64 true z-coordinates (projected onto the line)
+- `dx`: Vector of Float64 residuals in the x-direction.
+- `dy`: Vector of Float64 residuals in the y-direction.
+- `dz`: Vector of Float64 residuals in the z-direction.
+- 'surface': Vector of String of the surface of the point
+- 'y_edges': Steplenrange of the y axis
+- 'z_edges': Steplenrange of the z axis
+- 'x_edges': Steplenrange of the x axis
+- 'min_counts': minimum number of counts to compute the average
+
+# Returns
+- 'avg_dx': Average residuals in the x direction
+- 'avg_dy': Average residuals in the y direction
+- 'avg_dz': Average residuals in the z direction
+- 'counts': Number of hits inside a point of the map
+"""
+
+function make_residual_heatmap_at_edge(
+    selected_surface::String,
+    x::AbstractVector,
+    y::AbstractVector,
+    z::AbstractVector,
+    dx::AbstractVector,
+    dy::AbstractVector,
+    dz::AbstractVector,
+    surface::AbstractVector;
+    axis = :y,
+    y_edges,
+    z_edges,
+    x_edges,
+    min_counts = 2
+)
+
+    N = length(x)
+
+    # --- Select binning coordinate ---
+    if axis == :y
+        bin_edges = y_edges
+        coord = y
+    elseif axis == :x
+        bin_edges = x_edges
+        coord = x
+    else
+        throw(ArgumentError("axis must be :y or :x"))
+    end
+
+    nbins = length(bin_edges) - 1
+    nbins_z = length(z_edges) - 1
+
+    # --- Initialize accumulators ---
+    sum_dx = zeros(nbins_z, nbins)
+    sum_dy = zeros(nbins_z, nbins)
+    sum_dz = zeros(nbins_z, nbins)
+    counts = zeros(Int, nbins_z, nbins)
+
+    # ==========================================================
+    #                   Single-pass binning
+    # ==========================================================
+
+    @inbounds for i in 1:N
+
+        # Skip invalid residuals
+        if !isfinite(dx[i]) || !isfinite(dy[i]) || !isfinite(dz[i])
+            continue
+        end
+
+        xi = x[i]
+        yi = y[i]
+        zi = z[i]
+
+        if selected_surface == "neg_y" 
+            surface[i] == "neg_y" || continue
+        elseif selected_surface == "pos_y" 
+            surface[i] == "pos_y" || continue
+        elseif selected_surface == "neg_x" 
+            surface[i] == "neg_x" || continue
+        elseif selected_surface == "pos_x" 
+            surface[i] == "pos_x" || continue
+        end
+
+        binval = coord[i]
+
+        ibin = searchsortedlast(bin_edges, binval)
+        iz   = searchsortedlast(z_edges, zi)
+
+        if 1 ≤ ibin ≤ nbins && 1 ≤ iz ≤ nbins_z
+            sum_dx[iz, ibin] += dx[i]
+            sum_dy[iz, ibin] += dy[i]
+            sum_dz[iz, ibin] += dz[i]
+            counts[iz, ibin] += 1
+        end
+    end
+
+    # ==========================================================
+    #                   Compute averages
+    # ==========================================================
+
+    avg_dx = fill(NaN, nbins_z, nbins)
+    avg_dy = fill(NaN, nbins_z, nbins)
+    avg_dz = fill(NaN, nbins_z, nbins)
+
+    @inbounds for iz in 1:nbins_z, ibin in 1:nbins
+        c = counts[iz, ibin]
+        if c ≥ min_counts
+            inv = 1.0 / c
+            avg_dx[iz, ibin] = sum_dx[iz, ibin] * inv
+            avg_dy[iz, ibin] = sum_dy[iz, ibin] * inv
+            avg_dz[iz, ibin] = sum_dz[iz, ibin] * inv
+        end
+    end
+
+    return avg_dx, avg_dy, avg_dz, counts
+end
+
  

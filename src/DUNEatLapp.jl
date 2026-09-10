@@ -81,6 +81,7 @@ export select_fiducial
 export check_selection_cathode
 export compute_true_and_residuals_at_one_point
 export make_residual_heatmap_for_horizontal_plan
+export make_residual_heatmap_at_edge
 
 include("utils.jl")
 include("types.jl")
