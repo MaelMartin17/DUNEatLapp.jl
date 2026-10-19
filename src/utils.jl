@@ -291,12 +291,13 @@ end
 
 
 """
-    reconstruct_low_e_hit(Q_fC)
+    reconstruct_low_e_hit(Q_fC;R_avg)
 
 Best for hits < 10 MeV where dx is uncertain. 
 Uses the 'MIP-limit' recombination rather than local dQ/dx.
+R_avg set to 0.57 based on protoDUNE-HD with Bi-207 result
 """
-function reconstruct_low_e_hit(Q_fC)
+function reconstruct_low_e_hit(Q_fC;R_avg=0.57)
     # Constants
     W_ion = 23.6e-6  # MeV/e-
     fC_to_e = 6241.5
@@ -305,7 +306,7 @@ function reconstruct_low_e_hit(Q_fC)
     # At 0.45 kV/cm, the recombination factor R is ~0.635
     # (Calculated using Birks with ICARUS params)
     #R_avg = 0.635 
-    R_avg = 0.57 #From ProtoDUNE-HD + Bi-207 estimation
+    #R_avg = 0.57 #From ProtoDUNE-HD + Bi-207 estimation
     
     # 2. Convert total collected charge directly to Energy
     Energy_MeV = (Q_fC * fC_to_e * W_ion) / R_avg

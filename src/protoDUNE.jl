@@ -5,6 +5,7 @@ raw"""
                         halo_radius::Real = 50.0, 
                         e_min = 0.05, 
                         d_track::Real = 85.0, 
+			R = 0.57,
                         tmin::Real = 0)
 
 Perform two-tier spatial clustering of low-energy hits within identical event/trigger windows.
@@ -25,6 +26,7 @@ Perform two-tier spatial clustering of low-energy hits within identical event/tr
 - `halo_radius::Real`: Maximum distance from core centroid for collecting halo hits (default: `50.0`).
 - `e_min`: Minimum hit energy threshold for clustering (default: `0.05`).
 - `d_track::Real`: Minimum 3D distance to track cut (default: `85.0`).
+- `R`: Recombination survival factor: around `0.57` for 500 V/cm.
 - `tmin::Real`: Minimum timestamp cut (default: `0`).
 
 # Returns
@@ -39,7 +41,8 @@ function cluster_hits_twotier(hits;
                               core_radius::Real=15.0, 
                               halo_radius::Real=50.0, 
                               e_min=0.05, 
-                              d_track::Real=85.0, 
+                              d_track::Real=85.0,
+			      R=0.57, 
                               tmin::Real=0)
     
     # Ensure allowed_modules is a Set for fast lookup without mutating global state
@@ -79,7 +82,7 @@ function cluster_hits_twotier(hits;
         window = idx[start_i:stop_i]
         n_points = length(window)
 
-        energies = [reconstruct_low_e_hit(f_hits[i].charge_pos[3]) for i in window]
+        energies = [reconstruct_low_e_hit(f_hits[i].charge_pos[3];R_avg=R) for i in window]
         assigned = falses(n_points)
 
         b_q, b_x, b_y, b_z, b_n, b_t = Float64[], Float64[], Float64[], Float64[], Int[], Float64[]
