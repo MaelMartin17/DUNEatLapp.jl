@@ -1,7 +1,7 @@
 name = "DUNEatLapp"
 uuid = "fdff9d19-a718-4541-8df3-3ed0c3979067"
-authors = ["Mael <mael.martin@lapp.in2p3.fr>"]
 version = "0.8.5"
+authors = ["Mael <mael.martin@lapp.in2p3.fr>"]
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -17,6 +17,7 @@ ProgressBars = "49802e3a-d2f1-5c88-81d8-b72133a6f568"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 CSV = "0.10.14"
@@ -24,6 +25,7 @@ Clustering = "0.15.7"
 Distributions = "0.25.112"
 HDF5 = "0.17.2"
 ProgressBars = "1.5.1"
+Unitful = "1.29.0"
 julia = "1.10"
 
 [extras]

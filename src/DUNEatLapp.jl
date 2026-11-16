@@ -15,6 +15,7 @@ using Distances
 using StaticArrays
 using LinearAlgebra
 using Plots
+using Unitful
 
 export greet_DUNEatLapp
 export get_evts_index
@@ -82,6 +83,7 @@ export check_selection_cathode
 export compute_true_and_residuals_at_one_point
 export make_residual_heatmap_for_horizontal_plan
 export make_residual_heatmap_at_edge
+export rescale_neutron
 
 include("utils.jl")
 include("types.jl")
