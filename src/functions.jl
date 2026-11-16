@@ -124,3 +124,63 @@ function Compute_Sun_initialVector(Event::Matrix)
     return  Liste_iniV
 end
 #_______________________________________________________________________________________________________________________
+"""
+    rescale_neutron(h_neutron_side, side; n_runs::Int64=30,evts_per_run::Int64=500000)
+Function to rescale the neutron histogram based on the specified side and simulation parameters.
+
+# Arguments
+- `h_neutron_side`: type::Histogram of the energy spectrum of the neutrons coming from the specified side.
+- `side`: string indicating the side of the detector ("Bottom", "LongWall", or "ShortWall").
+- `n_runs`: number of simulation runs.
+- `evts_per_run`: number of events per run.
+
+# Returns
+- `counts`: Rescaled counts for the neutron histogram.
+"""
+function rescale_neutron(h_neutron_side, side; n_runs::Int64=30,evts_per_run::Int64=500000)
+
+    ##############################
+    # DUNE parameters for neutron flux at the FD Cavern
+    # change this to adapt the scenario
+    # We expect to have a value between 1 (best scenario) and 9 (worst scenario)
+    neutron_flux = 2.2e-6#n/cm2/s 
+    #############################
+    # Surface
+    DUNE_area_long = 12e2*64e2
+    DUNE_area_short = 12e2*12e2
+    # Time 
+    number_of_years = 10*u"yr"
+    days_per_year = 365
+    hours_per_day = 24
+    minutes_per_hour = 60 
+    seconds_per_minute = 60
+    seconds_in_period = uconvert(u"s",number_of_years)
+
+    total_rate_Bottom = 2 * neutron_flux * DUNE_area_long * ustrip(seconds_in_period)
+    total_rate_long_wall = 2 * neutron_flux * DUNE_area_long * ustrip(seconds_in_period)
+    total_rate_short_wall = 2 * neutron_flux * DUNE_area_short * ustrip(seconds_in_period)
+
+    if side == "Bottom"
+        #Bottom
+        rate_per_second_Bottom   = total_rate_Bottom/uconvert(u"s",10*u"yr")
+        time_sim_neutrons_Bottom = n_runs*evts_per_run/rate_per_second_Bottom
+        scaling_factor_Bottom    = uconvert(u"s",10*u"yr")/time_sim_neutrons_Bottom
+        counts = rand.(Poisson.(h_neutron_side.weights .* scaling_factor_Bottom));
+    elseif side == "LongWall"
+        #Long Wall
+        rate_per_second_longW   = total_rate_long_wall/uconvert(u"s",10*u"yr")
+        time_sim_neutrons_longW = n_runs*evts_per_run/rate_per_second_longW
+        scaling_factor_longW    = uconvert(u"s",10*u"yr")/time_sim_neutrons_longW
+        counts = rand.(Poisson.(h_neutron_side.weights .* scaling_factor_longW));
+    elseif side == "ShortWall"
+        #Short Wall
+        rate_per_second_shortW   = total_rate_short_wall/uconvert(u"s",10*u"yr")
+        time_sim_neutrons_shortW = n_runs*evts_per_run/rate_per_second_shortW
+        scaling_factor_shortW    = uconvert(u"s",10*u"yr")/time_sim_neutrons_shortW
+        counts = rand.(Poisson.(h_neutron_side.weights .* scaling_factor_shortW));
+    else
+        error("Invalid side. Choose from 'Bottom', 'LongWall', or 'ShortWall'.")
+    end
+    return counts
+end
+#_______________________________________________________________________________________________________________________
