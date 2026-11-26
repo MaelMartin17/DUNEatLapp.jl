@@ -163,12 +163,15 @@ function plot_detector_planes_CRPs(z_height = 340.64, alpha = 0.4)
     top_plane_r    = fill(z_height, length(x_range_r), length(y_range))    # Right top plane
     bottom_plane_l = fill(-z_height, length(x_range_l), length(y_range))  # Left bottom plane
     bottom_plane_r = fill(-z_height, length(x_range_r), length(y_range))  # Right bottom plane
-    cathode        = fill(0.0, length(x_range), length(y_range))          # Cathode plane
+    cathode_l      = fill(0.0, length(x_range_l), length(y_range)) #Cathode left
+    cathode_r      = fill(0.0, length(x_range_r), length(y_range)) #Cathode right
+    #cathode        = fill(0.0, length(x_range), length(y_range))          # Cathode plane
 
     # Initialize the plot with labels and styling
     plt = plot(
         legend = false,
         colorbar = false,
+        aspect_ratio=:equal,
         xlabel = "y [cm]",
         ylabel = "z [cm]",
         zlabel = "x [cm]",
@@ -180,10 +183,55 @@ function plot_detector_planes_CRPs(z_height = 340.64, alpha = 0.4)
     surface!(plt, x_r, y_r, top_plane_r;    color = :orange,     alpha = alpha, linecolor = :orange)
     surface!(plt, x_l, y_l, bottom_plane_l; color = :orangered4, alpha = alpha, linecolor = :orange3)
     surface!(plt, x_r, y_r, bottom_plane_r; color = :orange,     alpha = alpha, linecolor = :orange)
-    surface!(plt, x,   y,   cathode;        color = :black,     alpha = alpha, linecolor = :black)
+    surface!(plt, x_l, y_l,  cathode_l;      color = :black,      alpha = alpha, linecolor = :black)
+    surface!(plt, x_r, y_r,  cathode_r;      color = :grey3,      alpha = alpha, linecolor = :black)
+
+    side_arapuca = 58.8
+    half_side = side_arapuca / 2
+
+    pds_x_center = [290.35, 123.35, 42.6, 209.1,
+                    -46.65, -213.15, -213.15, -127.9]
+
+    pds_y_center = [187.275, 258.525, 112.025, 40.775,
+                    187.275, 258.525, 112.025, 40.775]
+
+    pds_z_center = zeros(length(pds_y_center))
+
+    # Draw each ARAPUCA as a square in the YZ plane
+    for i in eachindex(pds_y_center)
+
+        yc = pds_y_center[i]
+        zc = pds_z_center[i]
+        xc = pds_x_center[i]
+
+        # Square corners
+        println(xc+half_side)
+        x_square = [xc-half_side, xc+half_side,
+                    xc+half_side, xc-half_side]
+
+        y_square = [yc-half_side, yc-half_side,
+                    yc+half_side, yc+half_side]
+
+        z_square = fill(zc, 4)
+
+        # Close the square
+        push!(y_square, y_square[1])
+        push!(z_square, z_square[1])
+        push!(x_square, x_square[1])
+
+        # Plot the ARAPUCA
+        plot3d!(
+            plt,
+            x_square, y_square, z_square;
+            color = :deepskyblue,
+            linewidth = 2.5,
+            label = false
+        )
+    end
 
     return plt
 end
+
 
 """
     fit_line_3d(x, y, z)
